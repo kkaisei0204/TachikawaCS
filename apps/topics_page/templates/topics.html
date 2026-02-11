@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>トピックス - 立川混雑シェア</title>
+  
+  <!-- 外部CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="混雑シェア">
+</head>
+<body>
+  <header>
+    <div class="app_name">
+      <h1>立川混雑シェア</h1>
+    </div>
+    <!-- モバイル用ハンバーガーメニューボタン -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <div class="menu-outer01">
+      <ul class="sample_menu_list01">
+        <li><a href="{{ url_for('main.index') }}">トップ</a></li>
+        <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
+        <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('main.admin_panel') }}">管理者パネル</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% else %}
+          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+          <li><a href="{{ url_for('main.register') }}">新規登録</a></li>
+        {% endif %}
+      </ul>        
+    </div>
+  </header>
+  <div class="menu-overlay" id="menuOverlay"></div>
+  
+
+  
+  <!-- フラッシュメッセージ表示 -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  
+  <div class="container">
+    <!-- お知らせセクション -->
+    <div class="notice-section">
+      <h2>お知らせ</h2>
+      <p>立川市内の混雑状況をリアルタイムで共有できるサービスです。</p>
+      <div style="margin-top: 15px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+        <strong style="color: #856404;">NEW!</strong> 
+        <a href="{{ url_for('main.oharatei') }}#reserve" style="color: #856404; font-weight: 600; text-decoration: underline;">大原亭のオンライン予約</a>が始まりました！
+      </div>
+    </div>
+    
+    <!-- トピックスセクション -->
+    <div class="topics-section">
+      <h2>最近の投稿（1時間以内）</h2>
+      {% if recent_posts %}
+        <div class="posts-grid">
+          {% for post in recent_posts %}
+            <div class="post-card" id="post-{{ post.id }}">
+              <div class="post-card-header">
+                <a href="{{ url_for('main.user_page', username=post.user_name) }}" class="username-link">
+                  <strong>{{ post.user_name }}</strong>
+                </a>
+                {% if post.user_avg_rating is not none %}
+                  <span class="user-rating-small">
+                    {% set stars = ((post.user_avg_rating / 100 * 5) | round | int) %}
+                    {% for i in range(stars) %}★{% endfor %}{% for i in range(5 - stars) %}☆{% endfor %}
+                  </span>
+                {% endif %}
+              </div>
+              <div class="post-card-body">
+                <div class="shop-name">{{ post.shop_name }}</div>
+                <div class="crowd-status status-{{ post.crowd_level }}">{{ post.crowd_level }}</div>
+                <div class="post-comment">{{ post.comment }}</div>
+              </div>
+              <div class="post-card-footer">
+                <span class="post-time">{{ post.time_ago }}</span>
+                <div class="post-ratings">
+                  {% if current_user.is_authenticated %}
+                    <button 
+                      class="rating-btn helpful-btn {% if post.user_rated == 'helpful' %}active{% endif %}" 
+                      data-post-id="{{ post.id }}" 
+                      data-rating="1"
+                      {% if post.user_rated is not none %}disabled{% endif %}>
+                      👍 <span class="count">{{ post.helpful_count }}</span>
+                    </button>
+                    <button 
+                      class="rating-btn not-helpful-btn {% if post.user_rated == 'not_helpful' %}active{% endif %}" 
+                      data-post-id="{{ post.id }}" 
+                      data-rating="0"
+                      {% if post.user_rated is not none %}disabled{% endif %}>
+                      👎 <span class="count">{{ post.not_helpful_count }}</span>
+                    </button>
+                  {% else %}
+                    <span class="post-ratings-mini">
+                      👍 {{ post.helpful_count }} 👎 {{ post.not_helpful_count }}
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="no-posts-message">1時間以内の投稿がありません。ログインして最新の混雑情報を投稿してみましょう！</p>
+      {% endif %}
+    </div>
+  </div>
+    
+  
+  <footer>
+    <p>© 2025 立川混雑シェアマップ</p>
+  </footer>
+  
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const ratingButtons = document.querySelectorAll('.rating-btn');
+
+    ratingButtons.forEach(btn => {
+      btn.addEventListener('click', async function () {
+        const postId = this.getAttribute('data-post-id');
+        const rating = this.getAttribute('data-rating');
+
+        console.log('評価ボタンクリック:', { postId, rating });
+
+        const postCard = document.getElementById(`post-${postId}`);
+        if (!postCard) {
+          console.error('投稿カードが見つかりません:', postId);
+          return;
+        }
+
+        const helpfulBtn = postCard.querySelector('[data-rating="1"]');
+        const notHelpfulBtn = postCard.querySelector('[data-rating="0"]');
+
+        // 連打防止（通信前にロック）
+        helpfulBtn.disabled = true;
+        notHelpfulBtn.disabled = true;
+        this.classList.add('active');
+
+        try {
+          const url = `/topics/rate/${postId}/${rating}`;
+          console.log('リクエストURL:', url);
+
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json'
+            }
+          });
+
+          console.log('レスポンスステータス:', response.status);
+
+          // 500とかで落ちた時にJSが死なないように
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log('レスポンスデータ:', data);
+
+          if (!data.success) {
+            alert(data.error || "評価に失敗しました");
+            // 失敗なら押し直せるように戻す
+            helpfulBtn.disabled = false;
+            notHelpfulBtn.disabled = false;
+            this.classList.remove('active');
+            return;
+          }
+
+          // カウントだけ更新（ページ更新なし）
+          helpfulBtn.querySelector('.count').textContent = data.helpful_count;
+          notHelpfulBtn.querySelector('.count').textContent = data.not_helpful_count;
+
+          console.log('評価が完了しました');
+          // 成功したらロック維持（1人1回の仕様）
+        } catch (err) {
+          console.error('評価エラー:', err);
+          alert("通信に失敗しました: " + err.message);
+          // 通信エラーならやり直せるように戻す
+          helpfulBtn.disabled = false;
+          notHelpfulBtn.disabled = false;
+          this.classList.remove('active');
+        }
+      });
+    });
+  });
+  </script>
+
+  <script>
+    // モバイルメニュートグル
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    const menuOuter = document.querySelector('.menu-outer01');
+    const menuOverlay = document.getElementById('menuOverlay');
+    
+    if (menuToggle && menuOuter && menuOverlay) {
+      menuToggle.addEventListener('click', function() {
+        this.classList.toggle('active');
+        menuOuter.classList.toggle('active');
+        menuOverlay.classList.toggle('active');
+      });
+      
+      menuOverlay.addEventListener('click', function() {
+        menuToggle.classList.remove('active');
+        menuOuter.classList.remove('active');
+        this.classList.remove('active');
+      });
+      
+      // メニュー項目クリック時に閉じる
+      const menuLinks = menuOuter.querySelectorAll('a');
+      menuLinks.forEach(link => {
+        link.addEventListener('click', function() {
+          menuToggle.classList.remove('active');
+          menuOuter.classList.remove('active');
+          menuOverlay.classList.remove('active');
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>

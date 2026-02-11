@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>投稿編集 | 立川混雑シェア</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <header>
+    <div class="app_name">
+      <h1>立川混雑シェア</h1>
+    </div>
+    <div class="menu-outer01">
+      <ul class="sample_menu_list01">
+        <li><a href="{{ url_for('main.index') }}">トップ</a></li>
+        <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
+        <li><a href="{{ url_for('main.index') }}#map">地図を見る</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('main.admin_panel') }}">管理者パネル</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% else %}
+          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+          <li><a href="{{ url_for('main.register') }}">新規登録</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </header>
+
+  <!-- フラッシュメッセージ表示 -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="container">
+    <!-- 投稿編集フォーム -->
+    <section class="post-form">
+      <h1>投稿を編集</h1>
+
+      <form method="POST" action="{{ url_for('post.update_post_route', post_id=post.id) }}">
+        <div class="form-group">
+          <label for="shop_name">店名・場所</label>
+          <select id="shop_name" name="shop_name" required>
+            <option value="">選択してください</option>
+            {% for shop in shop_list %}
+              <option value="{{ shop }}" {% if shop == post.shop_name %}selected{% endif %}>{{ shop }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="crowd_level">混雑状況</label>
+          <select id="crowd_level" name="crowd_level" required>
+            <option value="">選択してください</option>
+            {% for level in crowd_levels %}
+              <option value="{{ level }}" {% if level == post.crowd_level %}selected{% endif %}>{{ level }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="comment">コメント</label>
+          <textarea id="comment" name="comment" placeholder="例：午前中は比較的空いていました。" rows="3">{{ post.comment }}</textarea>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn-submit">更新する</button>
+          <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="btn-cancel">キャンセル</a>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <footer>
+    <p>© 2025 立川混雑シェアマップ</p>
+  </footer>
+
+</body>
+</html>

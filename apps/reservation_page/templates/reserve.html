@@ -1,0 +1,127 @@
+<!-- apps/routes/templates/reserve.html -->
+{% extends "base.html" %}
+{% block title %}予約ページ{% endblock %}
+{% block content %}
+
+<div class="reservation-container">
+  <h2 class="page-title">立川市 飲食店予約</h2>
+
+  <!-- 店舗選択 -->
+  <section class="shop-select-section">
+    <h3>店舗を選択してください</h3>
+    <label for="shopSelect">店舗を選択：</label>
+    <select id="shopSelect">
+      <option value="">選択してください</option>
+      {% for shop in shop_list %}
+        <option value="{{ shop.name }}">{{ shop.name }}</option>
+      {% endfor %}
+    </select>
+  </section>
+
+  <!-- 予約フォーム -->
+  <form id="reserveForm" 
+        action="{{ url_for('reservation.reserve') }}" 
+        method="POST" 
+        class="reservation-form"
+        style="display:none;">
+
+    <h2 id="selectedShop" style="color:#00796b; margin-top:1.5rem;"></h2>
+    <input type="hidden" name="shop_name" id="shopInput">
+
+    <label>お名前：</label>
+    <input type="text" name="user_name" required>
+
+    <label>予約日：</label>
+    <input type="date" name="date" required>
+
+    <label>予約時間：</label>
+    <input type="time" name="time" required>
+
+    <label>人数：</label>
+    <select name="people" required>
+      <option value="">選択してください</option>
+      <option value="1">1名</option>
+      <option value="2">2名</option>
+      <option value="3">3名</option>
+      <option value="4">4名</option>
+      <option value="5">5名</option>
+      <option value="6">6名</option>
+      <option value="7">7名</option>
+      <option value="8">8名</option>
+      <option value="9">9名</option>
+      <option value="10">10名以上</option>
+    </select>
+
+    <label>備考（任意）：</label>
+    <textarea name="comment" rows="3"></textarea>
+
+    <button type="submit" class="submit-btn">予約する</button>
+  </form>
+
+  <hr class="divider">
+
+  <!-- 登録済み予約一覧 -->
+  <section class="reservation-history">
+    <h3 class="section-title">🧾 登録済みの予約一覧</h3>
+    <div class="reservation-list">
+      {% if reservations %}
+        {% for r in reservations %}
+        <div class="reservation-item">
+          <p><strong>名前：</strong>{{ r.user_name }}</p>
+          <p><strong>店舗：</strong>{{ r.shop_name }}</p>
+          <p><strong>日付：</strong>{{ r.date }}</p>
+          <p><strong>時間：</strong>{{ r.time }}</p>
+          <p><strong>人数：</strong>{{ r.people }}名</p>
+          {% if r.comment %}
+          <p><strong>備考：</strong>{{ r.comment }}</p>
+          {% endif %}
+          <p class="timestamp">登録日時：{{ r.created_at.strftime("%Y-%m-%d %H:%M") }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="no-data">まだ予約がありません。</p>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<!-- ✅ 店舗選択に応じてフォーム表示＋URLパラメータ反映 -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const shopSelect = document.getElementById("shopSelect");
+    const form = document.getElementById("reserveForm");
+    const shopNameDisplay = document.getElementById("selectedShop");
+    const shopInput = document.getElementById("shopInput");
+
+    // ✅ URLパラメータから店舗名を取得（例: ?shop_name=〇〇）
+    const params = new URLSearchParams(window.location.search);
+    const shopFromURL = params.get("shop_name");
+
+    // もしURLにshop_nameがあれば、自動選択してフォーム表示
+    if (shopFromURL) {
+      for (let option of shopSelect.options) {
+        if (option.value === shopFromURL) {
+          option.selected = true;
+          break;
+        }
+      }
+      shopNameDisplay.textContent = `【${shopFromURL}】のご予約`;
+      shopInput.value = shopFromURL;
+      form.style.display = "block";
+    }
+
+    // 通常の選択操作にも対応
+    shopSelect.addEventListener("change", () => {
+      const selected = shopSelect.value;
+      if (selected) {
+        shopNameDisplay.textContent = `【${selected}】のご予約`;
+        shopInput.value = selected;
+        form.style.display = "block";
+      } else {
+        form.style.display = "none";
+      }
+    });
+  });
+</script>
+
+{% endblock %}

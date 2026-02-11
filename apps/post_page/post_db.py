@@ -1,0 +1,518 @@
+import sqlite3
+import os
+from datetime import datetime, timedelta
+
+# データベースファイルのパス
+DB_PATH = "post_data.db"
+
+def init_db():
+    """データベースとテーブルを初期化"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    # postsテーブル作成
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_name TEXT NOT NULL,
+            shop_name TEXT NOT NULL,
+            crowd_level TEXT NOT NULL,
+            comment TEXT,
+            timestamp TEXT NOT NULL
+        )
+    ''')
+    
+    # ratingsテーブル作成（評価機能）
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS ratings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            post_id INTEGER NOT NULL,
+            user_name TEXT NOT NULL,
+            rating_type TEXT NOT NULL,
+            UNIQUE(post_id, user_name)
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+    print("[DB初期化完了] post_data.db")
+
+
+def get_all_posts():
+    """全投稿を取得（新しい順）"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    #postsテーブルから全投稿を取得
+    c.execute('SELECT * FROM posts ORDER BY id DESC')
+    # # 実行結果をすべて取得
+    posts = c.fetchall()
+    conn.close()
+    return posts
+
+
+def add_post(user_name, shop_name, crowd_level, comment):
+    """新規投稿を追加"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    timestamp = datetime.now().isoformat()
+    # postsテーブルに新しい投稿を追加するSQL
+    c.execute('''
+        INSERT INTO posts (user_name, shop_name, crowd_level, comment, timestamp)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (user_name, shop_name, crowd_level, comment, timestamp))
+    
+    conn.commit()
+    conn.close()
+    print(f"[投稿保存] {user_name} → {shop_name}（{crowd_level}）")
+
+
+def get_post_by_id(post_id):
+    """投稿IDから投稿を取得"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('SELECT * FROM posts WHERE id = ?', (post_id,))
+    post = c.fetchone()
+    conn.close()
+    return post
+
+
+def update_post(post_id, shop_name, crowd_level, comment):
+    """投稿を更新"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # 店舗名・混雑度・コメントを更新するSQL
+    c.execute('''
+        UPDATE posts 
+        SET shop_name = ?, crowd_level = ?, comment = ?
+        WHERE id = ?
+    ''', (shop_name, crowd_level, comment, post_id))
+    conn.commit()
+    conn.close()
+
+
+def delete_post(post_id):
+    """投稿を削除"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('DELETE FROM posts WHERE id = ?', (post_id,))
+    conn.commit()
+    conn.close()
+
+
+def get_user_last_post_time(user_name):
+    """ユーザーの最後の投稿時刻を取得"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # 最新の投稿時刻を取得
+    c.execute('SELECT timestamp FROM posts WHERE user_name = ? ORDER BY timestamp DESC LIMIT 1', (user_name,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else None
+
+
+def get_posts_by_shop(shop_name):
+    """特定の店舗の投稿をすべて取得"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # 店舗名で絞って投稿を取得
+    c.execute('SELECT * FROM posts WHERE shop_name = ? ORDER BY timestamp DESC', (shop_name,))
+    posts = c.fetchall()
+    conn.close()
+    return posts
+
+
+def get_latest_post_by_shop(shop_name):
+    """店舗ごとの最新投稿を1件取得"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''
+        SELECT * FROM posts 
+        WHERE shop_name = ? 
+        ORDER BY timestamp DESC 
+        LIMIT 1
+    ''', (shop_name,))
+    result = c.fetchone()
+    conn.close()
+    return result
+
+
+# 評価関連の関数
+def get_post_ratings(post_id):
+    """投稿の評価数を取得"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    # 「役立った」の数
+    c.execute('SELECT COUNT(*) FROM ratings WHERE post_id = ? AND rating_type = ?', 
+              (post_id, 'helpful'))
+    helpful = c.fetchone()[0]
+    
+    # 「役立たない」の数
+    c.execute('SELECT COUNT(*) FROM ratings WHERE post_id = ? AND rating_type = ?', 
+              (post_id, 'not_helpful'))
+    not_helpful = c.fetchone()[0]
+    
+    conn.close()
+    return helpful, not_helpful
+
+
+def get_user_rating(post_id, user_name):
+    """特定のユーザーがその投稿に評価を付けたかどうかをチェック
+    Returns: 1 (helpful), 0 (not_helpful), None (未評価)
+    """
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # ユーザーがどの種類の評価をしたかを取得
+    c.execute('SELECT rating_type FROM ratings WHERE post_id = ? AND user_name = ?', (post_id, user_name))
+    result = c.fetchone()
+    conn.close()
+    
+    if result:
+        # 'helpful' なら 1, 'not_helpful' なら 0
+        return 1 if result[0] == 'helpful' else 0
+    return None
+
+
+def add_or_update_rating(post_id, user_name, rating_type):
+    """投稿に評価を追加または更新（rating_type: 'helpful' or 'not_helpful'）"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    try:
+        # 既存の評価があれば更新、なければ挿入
+        c.execute('''
+            INSERT INTO ratings (post_id, user_name, rating_type)
+            VALUES (?, ?, ?)
+            ON CONFLICT(post_id, user_name) 
+            DO UPDATE SET rating_type = excluded.rating_type
+        ''', (post_id, user_name, rating_type))
+        
+        conn.commit()
+    except Exception as e:
+        print(f"評価追加エラー: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+
+
+def get_user_average_rating(username):
+    """ユーザーの平均評価を取得（0-100のパーセンテージ）"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    # ユーザーの全投稿IDを取得
+    c.execute('SELECT id FROM posts WHERE user_name = ?', (username,))
+    post_ids = [row[0] for row in c.fetchall()]
+    
+    if not post_ids:
+        conn.close()
+        return None
+    
+    # 全ての評価を取得
+    placeholders = ','.join('?' * len(post_ids))
+    c.execute(f'SELECT rating_type FROM ratings WHERE post_id IN ({placeholders})', post_ids)
+    ratings = c.fetchall()
+    
+    conn.close()
+    
+    if not ratings:
+        return None
+    
+    # helpful = 1, not_helpful = 0として計算
+    helpful_count = sum(1 for r in ratings if r[0] == 'helpful')
+    total_count = len(ratings)
+    
+    # パーセンテージで返す（役立った評価の割合）
+    return int((helpful_count / total_count) * 100)
+
+
+def get_user_reservations(user_name):
+    """特定ユーザーの予約一覧を取得"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''
+        SELECT id, user_name, shop_name, date, time, people, comment
+        FROM reservations
+        WHERE user_name = ?
+        ORDER BY date DESC, time DESC
+    ''', (user_name,))
+    reservations = c.fetchall()
+    conn.close()
+    return reservations
+
+
+def delete_reservation(reservation_id):
+    """予約を削除"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('DELETE FROM reservations WHERE id = ?', (reservation_id,))
+    conn.commit()
+    conn.close()
+
+
+# ランクシステム関数（ポイント制）
+
+def get_user_helpful_count(username):
+    """ユーザーが獲得したの総数を取得"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    # ユーザーの全投稿IDを取得
+    c.execute('SELECT id FROM posts WHERE user_name = ?', (username,))
+    post_ids = [row[0] for row in c.fetchall()]
+    
+    if not post_ids:
+        conn.close()
+        return 0
+    
+    # 全投稿の「役立った」評価の数をカウント
+    placeholders = ','.join('?' * len(post_ids))
+    c.execute(f'''
+        SELECT COUNT(*) FROM ratings 
+        WHERE post_id IN ({placeholders}) 
+        AND rating_type = 'helpful'
+    ''', post_ids)
+    
+    count = c.fetchone()[0]
+    conn.close()
+    return count
+
+
+def get_user_rank_info(username):
+    """ユーザーのランク情報を取得（ポイント制・本番環境）"""
+    # 合計ポイントを取得
+    points_info = get_user_total_points(username)
+    total_points = points_info['total_points']
+    
+    #本番環境のランク判定
+    if total_points >= 10000:
+        rank = "信頼できる投稿者"
+        rank_level = 3
+        next_rank = None
+        progress = 100
+    elif total_points >= 5000:
+        rank = "プロレポーター"
+
+        rank_level = 2
+        next_rank = "信頼できる投稿者"
+        progress = int((total_points / 10000) * 100)
+    elif total_points >= 10:
+        rank = "ビギナー"
+
+        rank_level = 1
+        next_rank = "プロレポーター"
+        progress = int((total_points / 5000) * 100)
+    else:
+        rank = "未ランク"
+
+        rank_level = 0
+        next_rank = "ビギナー"
+        progress = int((total_points / 10) * 100)
+    
+    return {
+        "rank": rank,
+        #"icon": icon,
+        "rank_level": rank_level,
+        "total_points": total_points,
+        "next_rank": next_rank,
+        "progress": progress
+    }
+
+def can_set_banner(username):
+    """バナー設定が可能かチェック"""
+    points_info = get_user_total_points(username)
+    return points_info['total_points'] >= 5000
+
+
+def has_trusted_badge(username):
+    """信頼バッジを持っているかチェック"""
+    points_info = get_user_total_points(username)
+    return points_info['total_points'] >= 10000
+
+# 未投稿店舗チェック＆報酬システム（1時間以内判定）
+
+def is_shop_unposted(shop_name):
+    """その店舗が1時間以内に投稿がないかチェック（マップから消えた = 未投稿扱い）"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    # 1時間前の時刻
+    one_hour_ago = datetime.now() - timedelta(hours=1)
+    
+    # 1時間以内の投稿があるかチェック
+    c.execute('''
+        SELECT COUNT(*) FROM posts 
+        WHERE shop_name = ? 
+        AND datetime(timestamp) >= datetime(?)
+    ''', (shop_name, one_hour_ago.isoformat()))
+    
+    count = c.fetchone()[0]
+    conn.close()
+    
+    # 1時間以内に投稿がない = 未投稿扱い（True）
+    return count == 0
+
+
+def get_user_bonus_points(username):
+    """ユーザーのボーナスポイント取得"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    try:
+        # bonus_pointsからポイントを取得
+        c.execute('SELECT bonus_points FROM users WHERE username = ?', (username,))
+        result = c.fetchone()
+        conn.close()
+        return result[0] if result else 0
+    except:
+        conn.close()
+        return 0
+
+
+def add_bonus_points(username, points):
+    """ボーナスポイント付与"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    try:
+        # bonus_pointsにポイントを加算
+        c.execute('''
+            UPDATE users 
+            SET bonus_points = COALESCE(bonus_points, 0) + ?
+            WHERE username = ?
+        ''', (points, username))
+        
+        if c.rowcount == 0:
+            try:
+                # ユーザーが存在しない場合は新規作成
+                c.execute('ALTER TABLE users ADD COLUMN bonus_points INTEGER DEFAULT 0')
+                # ユーザーテーブルのボーナスポイントを更新
+                c.execute('''
+                    UPDATE users 
+                    SET bonus_points = COALESCE(bonus_points, 0) + ?
+                    WHERE username = ?
+                ''', (points, username))
+            except:
+                pass
+        
+        conn.commit()
+        print(f"[ボーナスポイント] {username} に {points}pt 付与")
+    except Exception as e:
+        print(f"[ボーナスポイント付与エラー] {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+
+# 評価ポイントシステム
+
+def add_evaluation_points_column_if_not_exists():
+    """evaluation_pointsカラムを追加（存在しない場合のみ）"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    try:
+        #ユーザーテーブルに評価ポイントカラムを追加
+        c.execute('ALTER TABLE users ADD COLUMN evaluation_points INTEGER DEFAULT 0')
+        conn.commit()
+        print("[DB更新] evaluation_pointsカラムを追加しました")
+    except sqlite3.OperationalError:
+        pass
+    finally:
+        conn.close()
+
+
+def get_user_evaluation_points(username):
+    """ユーザーの評価ポイント取得"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    try:
+        # 指定されたユーザーが評価ポイントを取得する
+        c.execute('SELECT evaluation_points FROM users WHERE username = ?', (username,))
+        result = c.fetchone()
+        conn.close()
+        return result[0] if result else 0
+    except:
+        conn.close()
+        return 0
+
+
+def add_evaluation_points(username, points):
+    """評価ポイント付与"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    try:
+        # 指定されたユーザーの評価ポイントを加算する
+        c.execute('''
+            UPDATE users 
+            SET evaluation_points = COALESCE(evaluation_points, 0) + ?
+            WHERE username = ?
+        ''', (points, username))
+        
+        conn.commit()
+        print(f"[評価ポイント] {username} に {points}pt 付与")
+    except Exception as e:
+        print(f"[評価ポイント付与エラー] {e}")
+        conn.rollback()
+    finally:
+        conn.close()
+
+
+def get_user_total_points(username):
+    """ユーザーの合計ポイント取得（bonus + evaluation）"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    try:
+        # 評価とボーナスの合計ポイントを取得する
+        c.execute('''
+            SELECT 
+                COALESCE(bonus_points, 0) as bonus,
+                COALESCE(evaluation_points, 0) as evaluation
+            FROM users 
+            WHERE username = ?
+        ''', (username,))
+        result = c.fetchone()
+        conn.close()
+        
+        if result:
+            bonus = result[0]
+            evaluation = result[1]
+            
+            return {
+                'bonus_points': bonus,
+                'evaluation_points': evaluation,
+                'total_points': bonus + evaluation
+            }
+        # 結果が存在しない場合はすべて0で返す
+        return {'bonus_points': 0, 'evaluation_points': 0, 'total_points': 0}
+    except:
+        conn.close()
+        # エラー時はすべて0で返す
+        return {'bonus_points': 0, 'evaluation_points': 0, 'total_points': 0}
+
+
+# usersテーブルにカラムを追加
+def add_bonus_points_column():
+    """usersテーブルにbonus_pointsカラムを追加"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    try:
+        # ユーザーテーブルにボーナスポイントカラムを追加
+        c.execute('ALTER TABLE users ADD COLUMN bonus_points INTEGER DEFAULT 0')
+        conn.commit()
+        print("[DB更新] bonus_pointsカラムを追加しました")
+    except sqlite3.OperationalError:
+        print("[DB更新] bonus_pointsカラムは既に存在します")
+    finally:
+        conn.close()
+
+
+# 初回実行時に自動でカラム追加を試みる
+try:
+    add_bonus_points_column()
+    add_evaluation_points_column_if_not_exists()
+except:
+    pass

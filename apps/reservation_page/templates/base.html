@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}立川混雑シェア{% endblock %}</title>
+  
+  <!-- 外部CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  
+  <style>
+    /* 予約ページ専用のスタイル */
+    .reservation-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .page-title {
+      color: #00796b;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .shop-select-section {
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+    
+    .shop-select-section h3 {
+      margin-top: 0;
+      color: #00796b;
+    }
+    
+    .shop-select-section label {
+      font-weight: 600;
+      margin-right: 1rem;
+    }
+    
+    .shop-select-section select {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: 2px solid #00796b;
+      border-radius: 5px;
+      min-width: 250px;
+    }
+    
+    .reservation-form {
+      margin: 2rem 0;
+      padding: 2rem;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    
+    .reservation-form label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .reservation-form input,
+    .reservation-form select,
+    .reservation-form textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    
+    .reservation-form textarea {
+      resize: vertical;
+      font-family: inherit;
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .submit-btn:hover {
+      background: #388E3C;
+    }
+    
+    .divider {
+      margin: 3rem 0;
+      border: none;
+      border-top: 2px solid #ddd;
+    }
+    
+    .reservation-history {
+      margin-top: 2rem;
+    }
+    
+    .section-title {
+      color: #00796b;
+      border-bottom: 3px solid #00796b;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .reservation-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .reservation-item {
+      background: #fff;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: box-shadow 0.3s;
+    }
+    
+    .reservation-item:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .reservation-item p {
+      margin: 0.5rem 0;
+    }
+    
+    .reservation-item strong {
+      color: #00796b;
+    }
+    
+    .timestamp {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 1rem;
+      border-top: 1px solid #eee;
+      padding-top: 0.5rem;
+    }
+    
+    .no-data {
+      text-align: center;
+      color: #999;
+      padding: 2rem;
+      font-style: italic;
+    }
+    
+    /* 予約履歴テーブル */
+    .reservation-history-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .reservation-history-container h1 {
+      color: #00796b;
+      margin-bottom: 2rem;
+    }
+    
+    .reservation-history-container table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+    }
+    
+    .reservation-history-container th {
+      background: #00796b;
+      color: white;
+      padding: 1rem;
+      text-align: left;
+    }
+    
+    .reservation-history-container td {
+      padding: 0.8rem;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .reservation-history-container tr:hover {
+      background: #f5f5f5;
+    }
+  </style>
+  
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header>
+    <div class="app_name">
+      <h1>立川混雑シェア</h1>
+    </div>
+    <div class="menu-outer01">
+      <ul class="sample_menu_list01">
+        <li><a href="{{ url_for('main.index') }}">トップ</a></li>
+        <li><a href="{{ url_for('main.index') }}#map">地図を見る</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
+          <li><a href="{{ url_for('reservation.reserve') }}">予約</a></li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('main.admin_panel') }}">管理者パネル</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% else %}
+          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+          <li><a href="{{ url_for('main.register') }}">新規登録</a></li>
+        {% endif %}
+      </ul>        
+    </div>
+  </header>
+  
+  <!-- フラッシュメッセージ表示 -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  
+  <footer>
+    <p>© 2025 立川混雑シェアマップ</p>
+  </footer>
+  
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
