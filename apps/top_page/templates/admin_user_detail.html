@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ユーザー詳細 | 管理者パネル</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+  <header>
+    <div class="app_name">
+      <h1>立川混雑シェア</h1>
+    </div>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <span></span><span></span><span></span>
+    </button>
+    
+    <div class="menu-outer01">
+      <ul class="sample_menu_list01">
+        {% if current_user.is_authenticated %}
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
+        {% endif %}
+        <li><a href="{{ url_for('main.index') }}">トップ</a></li>
+        <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
+        <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li><a href="{{ url_for('main.admin_panel') }}">管理者パネル</a></li>
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% else %}
+          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+        {% endif %}
+      </ul>        
+    </div>
+  </header>
+  <div class="menu-overlay" id="menuOverlay"></div>
+
+  <div class="container">
+    <h2>ユーザー詳細情報</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    
+    <div class="detail-box">
+      <div class="detail-row">
+        <span class="label">ユーザーID:</span>
+        <span class="value">{{ user.id }}</span>
+      </div>
+      
+      <div class="detail-row">
+        <span class="label">ユーザー名:</span>
+        <span class="value">{{ user.username }}</span>
+      </div>
+      
+      <div class="detail-row">
+        <span class="label">権限:</span>
+        <span class="value">
+          {% if user.is_admin %}
+            <span class="admin-badge">管理者</span>
+          {% else %}
+            <span class="user-badge">一般ユーザー</span>
+          {% endif %}
+        </span>
+      </div>
+      
+      <div class="detail-row">
+        <span class="label">パスワード:</span>
+        <span class="value">********** (セキュリティのため非表示)</span>
+      </div>
+    </div>
+    
+    <div class="action-buttons-area">
+      <a href="{{ url_for('main.admin_panel') }}" class="btn btn-back">ユーザー一覧に戻る</a>
+      
+      {% if user.id != current_user.id %}
+        <form method="POST" action="{{ url_for('main.admin_delete_user', user_id=user.id) }}" style="display: block; margin-top: 10px;">
+          <button type="submit" class="btn btn-delete">このユーザーを削除</button>
+        </form>
+      {% else %}
+        <p style="margin-top: 10px; color: #856404; font-size: 13px; text-align: center;">※自分自身のアカウントは削除できません</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 立川混雑シェアマップ</p>
+  </footer>
+
+  <script>
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    const menuOuter = document.querySelector('.menu-outer01');
+    const menuOverlay = document.getElementById('menuOverlay');
+    if (menuToggle) {
+      const toggleMenu = () => {
+        menuToggle.classList.toggle('active');
+        menuOuter.classList.toggle('active');
+        menuOverlay.classList.toggle('active');
+      };
+      menuToggle.addEventListener('click', toggleMenu);
+      menuOverlay.addEventListener('click', toggleMenu);
+    }
+  </script>
+</body>
+</html>

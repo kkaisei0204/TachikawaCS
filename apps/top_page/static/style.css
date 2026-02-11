@@ -1,0 +1,2882 @@
+/* ========================================
+   🎨 立川混雑シェア - メインスタイルシート
+   ======================================== */
+
+/* ========================================
+   📌 基本設定（全体のリセット）
+   ======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  background-color: white;
+  color: black;
+  scroll-behavior: smooth;
+  padding-bottom: 60px; /* フッター分のスペースを確保 */
+}
+
+/* ========================================
+   📌 ヘッダー（上部ナビゲーション）
+   ======================================== */
+header {
+  background-color: rgb(69, 69, 74);
+  color: white;
+  padding: 15px 30px;
+  box-shadow: 0 2px 4px whitesmoke;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  box-sizing: border-box;
+}
+
+/* アプリ名表示エリア */
+.app_name {
+  text-align: left;
+}
+
+.app_name h1 {
+  font-size: 24px;
+  margin-bottom: 0;
+  line-height: 1;
+}
+
+.app_name p {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* ========================================
+   📌 ナビゲーションメニュー
+   ======================================== */
+
+/* ユーザー情報表示エリア */
+.user-info {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  height: 100%;
+}
+
+/* メニューリスト */
+.sample_menu_list01 {
+  display: flex;
+  list-style: none;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  height: 100%;
+}
+
+.sample_menu_list01 li {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.sample_menu_list01 a {
+  color: white;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  white-space: nowrap;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.sample_menu_list01 a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   📌 フラッシュメッセージ（成功/エラー通知）
+   ======================================== */
+.flash-messages {
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+.flash {
+  padding: 12px 20px;
+  margin: 10px 0;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.flash.success {
+  background-color: greenyellow;
+  color: green;
+  border: 1px solid greenyellow;
+}
+
+.flash.error {
+  background-color: pink;
+  color: brown;
+  border: 1px solid pink;
+}
+
+/* ========================================
+   📌 メインコンテナ（ページ全体の幅制限）
+   ======================================== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+/* ========================================
+   📌 お知らせセクション（トップページ）
+   ======================================== */
+.notice-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px whitesmoke;
+  margin-bottom: 30px;
+}
+
+.notice-section h2 {
+  color: #2f2f33;
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+/* ========================================
+   📌 地図セクション（Leaflet地図表示）
+   ======================================== */
+.map-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px whitesmoke;
+}
+
+.map-section h2 {
+  color: #2f2f33;
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+
+
+/* ========================================
+   📌 フッター（ページ下部）- 常に固定表示
+   ======================================== */
+footer {
+  background-color: #2f2f33;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   📌 投稿フォーム（post.html）
+   ======================================== */
+.post-form {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px whitesmoke;
+  margin-bottom: 30px;
+}
+
+.post-form h1 {
+  color: #2f2f33;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: black;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 15px;
+  border: 2px solid whitesmoke;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2f2f33;
+}
+
+.btn-submit {
+  background-color: #2f2f33;
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+  background-color: #2f2f33;
+}
+
+/* ========================================
+   📌 最近の投稿セクション
+   ======================================== */
+.recent-posts {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px whitesmoke;
+}
+
+.recent-posts h2 {
+  color: #2f2f33;
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+.recent-posts ul {
+  list-style: none;
+}
+
+.recent-posts li {
+  padding: 15px;
+  border-bottom: 1px solid whitesmoke;
+  line-height: 1.6;
+}
+
+.recent-posts li:last-child {
+  border-bottom: none;
+}
+
+.recent-posts .time {
+  color: #666;
+  font-size: 14px;
+}
+
+/* ========================================
+   📌 投稿アイテム（個別の投稿表示）
+   ======================================== */
+.post-item {
+  padding: 20px !important;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 15px !important;
+}
+
+.post-header {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+/* ユーザー評価バッジ */
+.user-rating {
+  display: inline-block;
+  color: orange;
+  padding: 5px 10px;
+  font-size: 16px;
+  font-weight: normal;
+  margin-left: 8px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.post-content {
+  margin: 15px 0;
+  line-height: 1.8;
+}
+
+/* ========================================
+   📌 評価ボタン（👍👎）
+   ======================================== */
+.post-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-rating {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid whitesmoke;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-rating:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px whitesmoke;
+}
+
+/* 👍 役に立ったボタン */
+.btn-helpful {
+  color: #4caf50;
+  border-color: #4caf50;
+}
+
+.btn-helpful:hover:not(:disabled) {
+  background: #4caf50;
+  color: white;
+}
+
+.btn-helpful.rated {
+  background: #4caf50;
+  color: white;
+  border-color: #4caf50;
+}
+
+/* 👎 役に立たなかったボタン */
+.btn-not-helpful {
+  color: #f44336;
+  border-color: #f44336;
+}
+
+.btn-not-helpful:hover:not(:disabled) {
+  background: #f44336;
+  color: white;
+}
+
+.btn-not-helpful.rated {
+  background: #f44336;
+  color: white;
+  border-color: #f44336;
+}
+
+.btn-rating:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-rating .count {
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* ========================================
+   📌 ユーザーリンク（ヘッダーとカード内）
+   ======================================== */
+.user-link {
+  color: white;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.3s;
+  height: 32px;
+}
+
+.user-link:hover {
+  opacity: 0.8;
+}
+
+.user-icon {
+  font-size: 18px;
+}
+
+.username-link {
+  color: #2f2f33;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.username-link:hover {
+  text-decoration: underline;
+}
+
+/* ========================================
+   📌 トピックスページ（topics.html）
+   ======================================== */
+.recent-posts-section {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px whitesmoke;
+  margin-bottom: 30px;
+}
+
+.recent-posts-section h2 {
+  color: #2f2f33;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+/* 投稿カードグリッド表示 */
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* タブレット（768px〜1199px）: 3列 */
+@media (max-width: 1199px) {
+  .posts-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* スマートフォン大（414px〜767px）iPhone XR以上: 2列 */
+@media (max-width: 767px) {
+  .posts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* スマートフォン小（414px未満）: 1列 */
+@media (max-width: 413px) {
+  .posts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.post-card {
+  background: whitesmoke;
+  border-radius: 8px;
+  padding: 15px;
+  border: 2px solid whitesmoke;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px whitesmoke;
+}
+
+.post-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+user-rating-small {
+  background: #fff;
+  color: orange;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: normal;
+  border: 1px solid #ddd;
+  margin-left: 5px;
+}
+.post-card-body {
+  margin: 10px 0;
+}
+
+.shop-name {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: black;
+}
+
+/* 混雑状況バッジ */
+.crowd-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.status-空いている {
+  background: greenyellow;
+  color: green;
+}
+
+.status-やや混雑 {
+  background: papayawhip;
+  color: orange;
+}
+
+.status-満席 {
+  background: pink;
+  color: red;
+}
+
+.post-comment {
+  font-size: 13px;
+  color: gray;
+  line-height: 1.5;
+}
+
+.post-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid whitesmoke;
+  font-size: 12px;
+  color: gray;
+}
+
+.post-ratings-mini {
+  font-size: 12px;
+}
+
+.no-posts-message {
+  text-align: center;
+  color: gray;
+  padding: 40px 20px;
+  font-size: 16px;
+}
+
+/* ========================================
+   📌 ユーザープロフィールページ（user_page.html）
+   ======================================== */
+.user-profile {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px whitesmoke;
+  margin-bottom: 30px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.profile-icon {
+  font-size: 80px;
+  width: 100px;
+  height: 100px;
+  background: #12d730;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-info h1 {
+  font-size: 28px;
+  color: black;
+  margin-bottom: 10px;
+}
+
+/* 評価セクション全体 */
+.profile-rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* 星マーク（★★☆☆☆） */
+.rating-star {
+  font-size: 16px;          /* 控えめなサイズ */
+  color: #888;              /* 落ち着いたグレー */
+  letter-spacing: 1px;
+  font-weight: normal;
+}
+
+/* 評価値の数字（40など） */
+.rating-value {
+  font-size: 18px;          /* 小さめ */
+  font-weight: 500;         /* 普通の太さ */
+  color: #555;              /* グレー */
+  margin-left: 5px;
+}
+
+/* 「平均評価」のラベル */
+.rating-label {
+  color: #888;
+  font-size: 12px;
+  margin-top: 3px;
+  font-weight: normal;
+}
+
+/* ユーザー統計情報 */
+.profile-stats {
+  display: flex;
+  gap: 30px;
+  padding-top: 20px;
+  border-top: 2px solid whitesmoke;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2f2f33;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: gray;
+  margin-top: 5px;
+}
+
+/* ========================================
+   📌 ユーザーの投稿一覧
+   ======================================== */
+.user-posts-section {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px whitesmoke;
+}
+
+.user-posts-section h2 {
+  color: #2f2f33;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.user-posts-list {
+  display: grid;
+  gap: 15px;
+}
+
+.user-post-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #2f2f33;
+}
+
+.post-shop {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: black;
+}
+
+.post-status {
+  margin-bottom: 10px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.post-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid whitesmoke;
+  font-size: 13px;
+  color: gray;
+}
+
+.no-posts {
+  text-align: center;
+  padding: 40px;
+  color: gray;
+  font-size: 16px;
+}
+
+/* ========================================
+   📌 ユーザーアイコン画像
+   ======================================== */
+/* ヘッダー用（小サイズ） */
+.user-icon-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  margin-right: 5px;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* プロフィールページ用（大サイズ） */
+.profile-icon-img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid rgb(47, 218, 32);
+  box-shadow: 0 4px 8px gray;
+}
+
+/* ========================================
+   📌 プロフィール編集ページ（profile_edit.html）
+   ======================================== */
+.btn-edit-profile {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #2f2f33;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.btn-edit-profile:hover {
+  background-color: #2f2f33;
+}
+
+.profile-edit-container {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px whitesmoke;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.profile-edit-container h1 {
+  color: #2f2f33;
+  margin-bottom: 25px;
+  font-size: 24px;
+}
+
+.profile-edit-container .form-group {
+  margin-bottom: 20px;
+}
+
+.profile-edit-container .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2f2f33;
+}
+
+.profile-edit-container .form-group textarea,
+.profile-edit-container .form-group input[type="file"] {
+  width: 100%;
+  padding: 10px 15px;
+  border: 2px solid whitesmoke;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.profile-edit-container .form-group textarea:focus {
+  outline: none;
+  border-color: #2f2f33;
+}
+
+.profile-edit-container .current-icon {
+  margin: 15px 0;
+}
+
+.profile-edit-container .current-icon p {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #666;
+}
+
+.profile-edit-container .form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.profile-edit-container .btn-cancel {
+  display: inline-block;
+  padding: 12px 30px;
+  background-color: #999;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.profile-edit-container .btn-cancel:hover {
+  background-color: #777;
+}
+
+.profile-bio {
+  margin: 15px 0;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* ========================================
+   📌 予約ボタン（大原亭ページ）
+   ======================================== */
+.reservation-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #2f2f33;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  text-align: center;
+}
+
+.reservation-btn:hover {
+  background-color: #74747f;
+}
+
+/* ========================================
+   📌 投稿編集・削除ボタン
+   ======================================== */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #eee;
+  justify-content: flex-end;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-edit {
+  background-color: #2196f3;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #1976d2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+.btn-delete {
+  background-color: #f44336;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.btn-cancel {
+  padding: 12px 24px;
+  background-color: #9e9e9e;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  display: inline-block;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn-cancel:hover {
+  background-color: #757575;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(158, 158, 158, 0.3);
+}
+
+/* ========================================
+   📌 フラッシュメッセージ（改良版・右上固定）
+   ======================================== */
+.flash-messages {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+}
+
+.flash {
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease, slideOut 1s ease 3s forwards;
+  font-weight: 500;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+.flash.success {
+  background-color: #4caf50;
+  color: white;
+  border-left: 4px solid #2e7d32;
+}
+
+.flash.error {
+  background-color: #f44336;
+  color: white;
+  border-left: 4px solid #c62828;
+}
+
+.flash.warning {
+  background-color: #ff9800;
+  color: white;
+  border-left: 4px solid #e65100;
+}
+
+.flash.info {
+  background-color: #2196f3;
+  color: white;
+  border-left: 4px solid #1565c0;
+}
+
+/* ========================================
+   📌 管理者ページ（admin.html, admin_dashboard.html）
+   ======================================== */
+.form-container {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+.dashboard-container {
+  max-width: 800px;
+}
+
+.reservation-container {
+  max-width: 1000px;
+}
+
+.admin-nav {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.admin-nav a {
+  margin: 0 10px;
+  color: #2f2f33;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.chart-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+}
+
+/* テーブル（予約一覧など） */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.container h2 {
+  border-bottom: 2px solid #333;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ========================================
+   📌 店舗詳細ページ（shop_detail.html）
+   ======================================== */
+.shop-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.shop-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.shop-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+}
+
+.shop-header p {
+  margin: 5px 0;
+  opacity: 0.9;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #667eea;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.post-time {
+  color: #666;
+  font-size: 14px;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 16px;
+}
+
+/* AI予測表示 */
+.prediction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.prediction-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.prediction-time {
+  font-weight: bold;
+  color: #333;
+  min-width: 100px;
+}
+
+.prediction-level {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 混雑レベル別の色分け（AI予測用） */
+.prediction-level.status-空いている {
+  background-color: #4caf50;
+  color: white;
+}
+
+.prediction-level.status-やや混雑 {
+  background-color: #ff9800;
+  color: white;
+}
+
+.prediction-level.status-満席,
+.status-混雑,
+.prediction-level.status-混雑 {
+  background-color: #f44336;
+  color: white;
+}
+
+.prediction-confidence {
+  font-size: 14px;
+  color: #666;
+}
+
+/* おすすめ時間帯カード */
+.best-time-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+}
+
+.best-time-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.best-time-card .time {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* データ不足表示 */
+.data-insufficient {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.data-insufficient h3 {
+  color: #856404;
+  margin-bottom: 10px;
+}
+
+/* 戻るボタン */
+.back-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #667eea;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.back-button:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.last-updated {
+  text-align: right;
+  color: #999;
+  font-size: 13px;
+  margin-top: 15px;
+}
+
+/* ========================================
+   📌 アニメーション効果
+   ======================================== */
+
+/* ページ読み込み時のフェードイン */
+body {
+  animation: fadeInPage 2.0s ease-out;
+}
+
+@keyframes fadeInPage {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* カード系UIのふわっと表示 */
+.post-item,
+.post-card,
+.notice-section,
+.map-section,
+.user-profile {
+  animation: fadeUp 0.5s ease-out both;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ボタンのホバー時アニメーション */
+.btn-submit,
+.btn-rating,
+.reservation-btn,
+.btn-edit-profile {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-submit:hover,
+.btn-rating:hover:not(:disabled),
+.reservation-btn:hover,
+.btn-edit-profile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* メニューリンクのホバー強調 */
+.sample_menu_list01 a {
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.sample_menu_list01 a:hover {
+  transform: translateY(-1px);
+}
+
+/* 投稿カードのクリック感 */
+.post-card:active,
+.post-item:active {
+  transform: scale(0.98);
+}
+
+/* フラッシュメッセージのスライド表示 */
+.flash {
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* 店舗一覧*/
+
+.shops-section {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-top: 40px;
+}
+
+.shops-section h2 {
+  color: #2f2f33;
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.section-description {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.shops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.shop-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.shop-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-color: #667eea;
+}
+
+.shop-card.no-data {
+  background: #f8f9fa;
+  border-style: dashed;
+}
+
+.shop-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f1f3f5;
+}
+
+.shop-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+}
+
+.ai-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shop-card-body {
+  margin-bottom: 15px;
+}
+
+.shop-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.status-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.crowd-badge {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.crowd-badge.status-空いている {
+  background: #d4edda;
+  color: #155724;
+}
+
+.crowd-badge.status-やや混雑 {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.crowd-badge.status-満席 {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.shop-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.shop-posts-count {
+  font-size: 12px;
+  color: #999;
+}
+
+.no-data-body {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.no-data-text {
+  color: #999;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.no-data-sub {
+  color: #adb5bd;
+  font-size: 13px;
+}
+
+.shop-detail-btn,
+.shop-post-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: #667eea;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.shop-detail-btn:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.shop-post-btn {
+  background: #28a745;
+}
+
+.shop-post-btn:hover {
+  background: #218838;
+}
+
+/* ========================================
+   📌 段階2：店舗一覧セクション（topics.html下部）
+   既存のstyle.cssの最後に追加してください
+   ======================================== */
+
+.shops-section {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-top: 40px;
+}
+
+.shops-section h2 {
+  color: #2f2f33;
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.section-description {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.shops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.shop-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.shop-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-color: #667eea;
+}
+
+.shop-card.no-data {
+  background: #f8f9fa;
+  border-style: dashed;
+}
+
+.shop-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f1f3f5;
+}
+
+.shop-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+}
+
+.ai-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shop-card-body {
+  margin-bottom: 15px;
+}
+
+.shop-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.status-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.crowd-badge {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.crowd-badge.status-空いている {
+  background: #d4edda;
+  color: #155724;
+}
+
+.crowd-badge.status-やや混雑 {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.crowd-badge.status-満席 {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.shop-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.shop-posts-count {
+  font-size: 12px;
+  color: #999;
+}
+
+.no-data-body {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.no-data-text {
+  color: #999;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.no-data-sub {
+  color: #adb5bd;
+  font-size: 13px;
+}
+
+.shop-detail-btn,
+.shop-post-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: #667eea;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.shop-detail-btn:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.shop-post-btn {
+  background: #28a745;
+}
+
+.shop-post-btn:hover {
+  background: #218838;
+}
+
+/* post.htmlの未投稿の店舗 */
+
+.unposted-filter {
+  background: linear-gradient(135deg, #fff5e6 0%, #ffe4b5 100%);
+  border: 2px solid #ffc107;
+  border-radius: 10px;
+  padding: 15px 20px;
+  margin-bottom: 25px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bonus-badge {
+  background: #ff6b6b;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    transform: scale(1); 
+  }
+  50% { 
+    transform: scale(1.05); 
+  }
+}
+
+.filter-description {
+  margin: 10px 0 0 30px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.filter-description strong {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+
+/* ========================================
+   📌 店舗紹介セクション（topics.html下部）
+   ======================================== */
+.shops-intro-section {
+  background: white;
+  padding: 40px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-top: 50px;
+}
+
+.shops-intro-section h2 {
+  color: #2f2f33;
+  margin-bottom: 10px;
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.section-description {
+  text-align: center;
+  color: #666;
+  font-size: 15px;
+  margin-bottom: 35px;
+}
+
+/* 店舗カードグリッド */
+
+
+/* 店舗カード */
+
+
+
+
+/* カードヘッダー */
+
+
+
+.shop-category-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* カードボディ */
+
+
+
+
+/* 看板メニュー */
+
+
+.signature-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #856404;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.signature-text {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* カードフッター */
+
+
+.shop-website-link {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.shop-website-link:hover {
+  color: #5568d3;
+  transform: translateX(3px);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  
+  
+  .shops-intro-section {
+    padding: 30px 15px;
+  }
+  
+  
+}
+/* ========================================
+   📱 スマートフォン最適化CSS
+   ======================================== */
+
+/* モバイル用基本設定 */
+@media (max-width: 768px) {
+  
+  /* ========== 全体 ========== */
+  body {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .container {
+    padding: 10px;
+    max-width: 100%;
+  }
+  
+  /* ========== ヘッダー ========== */
+  header {
+    padding: 10px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .app_name h1 {
+    font-size: 18px;
+    margin: 0;
+  }
+  
+  /* メニューバー - モバイル向けコンパクト化 */
+  .sample_menu_list01 {
+    display: flex;
+    justify-content: space-around;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  
+  .sample_menu_list01 li {
+    flex: 1;
+    min-width: auto;
+  }
+  
+  .sample_menu_list01 a {
+    font-size: 12px;
+    padding: 8px 5px;
+    white-space: nowrap;
+  }
+  
+  /* ユーザーアイコン - 小さく */
+  .user-info img {
+    width: 24px;
+    height: 24px;
+  }
+  
+  /* ========== 地図 ========== */
+  
+  
+  /* フィルターボタン - 縦並び */
+  
+  
+  
+  
+  /* ========== 投稿フォーム ========== */
+  .post-form {
+    padding: 15px;
+    margin: 10px 0;
+  }
+  
+  .post-form h1 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  
+  .form-group select,
+  .form-group textarea,
+  .form-group input {
+    font-size: 16px; /* iOS Safari拡大防止のため16px以上 */
+    padding: 12px;
+  }
+  
+  .btn-submit {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    margin-top: 10px;
+  }
+  
+  /* ========== トピックスページ ========== */
+  .topics-header h1 {
+    font-size: 22px;
+  }
+  
+  .sort-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .sort-controls select {
+    width: 100%;
+    font-size: 16px;
+    padding: 10px;
+  }
+  
+  /* 投稿カード */
+  .post-card {
+    margin-bottom: 15px;
+    padding: 15px;
+  }
+  
+  .post-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .post-meta {
+    font-size: 12px;
+  }
+  
+  .rating-buttons {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .rating-btn {
+    flex: 1;
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+  
+  /* ========== 店舗紹介カード ========== */
+  .shops-intro-section {
+    padding: 20px 10px;
+  }
+  
+  .shops-intro-section h2 {
+    font-size: 20px;
+  }
+  
+  
+  
+  
+  
+  .shop-category-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  
+  
+  
+  /* ========== ユーザーページ ========== */
+  .user-profile {
+    padding: 15px;
+  }
+  
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .profile-banner {
+    height: 150px;
+  }
+  
+  .profile-icon {
+    width: 80px;
+    height: 80px;
+    margin-top: -40px;
+  }
+  
+  .user-stats {
+    grid-template-columns: repeat(2, 1fr); /* 2列 */
+    gap: 10px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+  }
+  
+  /* ========== フッター ========== */
+  footer {
+    padding: 15px;
+    font-size: 12px;
+  }
+  
+  /* ========== 未投稿フィルター ========== */
+  .unposted-filter {
+    padding: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .checkbox-text {
+    font-size: 14px;
+  }
+  
+  .bonus-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+  
+  /* ========== テーブル（admin等） ========== */
+  table {
+    font-size: 12px;
+  }
+  
+  table th,
+  table td {
+    padding: 8px 5px;
+  }
+  
+  /* ========== ポップアップ（Leaflet） ========== */
+  .leaflet-popup-content {
+    font-size: 13px;
+    margin: 10px;
+  }
+  
+  .leaflet-popup-content h3 {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  
+  /* ========== タッチ操作最適化 ========== */
+  /* ボタンのタップエリア拡大 */
+  button,
+  a,
+  .rating-btn,
+  
+  
+  /* スクロール時の慣性 */
+  body,
+  .container {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* セレクトボックスのスタイル統一 */
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    padding-right: 40px;
+  }
+}
+
+/* ========================================
+   📱 超小型画面（iPhone SE等）
+   ======================================== */
+@media (max-width: 375px) {
+  
+  .app_name h1 {
+    font-size: 16px;
+  }
+  
+  .sample_menu_list01 a {
+    font-size: 11px;
+    padding: 6px 3px;
+  }
+  
+  
+  
+  .user-stats {
+    grid-template-columns: 1fr; /* 1列に */
+  }
+}
+
+/* ========================================
+   📱 横向き（ランドスケープ）対応
+   ======================================== */
+@media (max-width: 768px) and (orientation: landscape) {
+  
+  
+  
+  .user-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ========================================
+   🔧 モバイル固有の問題修正
+   ======================================== */
+
+/* iOSのSafariでのフォーム入力時の自動ズーム防止 */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Androidのタップ時のハイライト色調整 */
+* {
+  -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+}
+
+/* スマホでのオーバースクロール防止 */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* モバイルでのテキスト選択を最適化 */
+.post-card,
+
+
+/* モバイルでのホバー効果を無効化（タップに最適化） */
+@media (hover: none) {
+  
+  
+  button:hover,
+  a:hover {
+    opacity: 0.8;
+  }
+}
+
+
+/* ========================================
+   🍔 モバイル用ハンバーガーメニュー（ヘッダー内配置）
+   ======================================== */
+
+/* ハンバーガーボタン（デフォルトは非表示） */
+.mobile-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  z-index: 1001;
+  flex-shrink: 0;
+}
+
+.mobile-menu-toggle span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background: white;
+  margin: 5px 0;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+/* ========================================
+   ハンバーガーメニュー - 黒グレー配色
+   ======================================== */
+
+/* メニュー背景を黒グレーに変更 */
+.menu-outer01 {
+  background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%) !important;
+}
+
+/* メニューアイテムのホバー */
+.sample_menu_list01 a:hover {
+  background: rgba(255,255,255,0.15) !important;
+}
+
+/* ユーザー情報エリア */
+.sample_menu_list01 .user-info {
+  background: rgba(255,255,255,0.1) !important;
+  border-bottom: 2px solid rgba(255,255,255,0.2) !important;
+}
+
+/* スマホメニュー（モバイル用） */
+@media (max-width: 768px) {
+  .menu-outer01 {
+    background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%) !important;
+  }
+  
+  .sample_menu_list01 li {
+    border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+  }
+}
+
+/* モバイル時のみ表示 */
+@media (max-width: 768px) {
+  
+  /* ヘッダーをフレックスボックスに */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .app_name {
+    flex-shrink: 0;
+  }
+  
+  .mobile-menu-toggle {
+    display: block;
+    order: 3; /* 右端に配置 */
+  }
+  
+  /* デフォルトのメニューを非表示（スライドメニュー化） */
+  .menu-outer01 {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 70%;
+    max-width: 300px;
+    height: 100vh;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    z-index: 1000;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+    padding-top: 60px;
+    box-shadow: -4px 0 12px rgba(0,0,0,0.3);
+  }
+  
+  .menu-outer01.active {
+    right: 0;
+  }
+  
+  .sample_menu_list01 {
+    flex-direction: column;
+    gap: 0;
+    padding: 20px 0;
+  }
+  
+  .sample_menu_list01 li {
+    width: 100%;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+  }
+  
+  .sample_menu_list01 a {
+    display: block;
+    padding: 15px 25px;
+    font-size: 16px;
+    color: white !important;
+    text-decoration: none;
+  }
+  
+  .sample_menu_list01 a:hover {
+    background: rgba(255,255,255,0.1);
+  }
+  
+  /* ユーザー情報を上部に表示 */
+  .sample_menu_list01 .user-info {
+    order: -1;
+    background: rgba(255,255,255,0.15);
+    border-bottom: 2px solid rgba(255,255,255,0.3);
+    padding: 20px;
+  }
+  
+  .sample_menu_list01 .user-info a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .sample_menu_list01 .user-info img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  /* オーバーレイ */
+  .menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+  }
+  
+  .menu-overlay.active {
+    display: block;
+  }
+  
+  /* ハンバーガーアニメーション（×印に変化） */
+  .mobile-menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(7px, 7px);
+  }
+  
+  .mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .mobile-menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+  }
+}
+
+
+/* ========================================
+   🗺️ 地図 - タッチ操作最適化
+   ======================================== */
+
+#map {
+  width: 100%;
+  height: 500px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  touch-action: pan-x pan-y; /* タッチ操作を許可 */
+  -webkit-overflow-scrolling: touch; /* iOS慣性スクロール */
+}
+
+@media (max-width: 768px) {
+  #map {
+    height: 50vh;
+    min-height: 350px;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 375px) {
+  #map {
+    min-height: 300px;
+  }
+}
+
+
+
+
+/* ========================================
+   📌 店舗紹介カード - 横3列表示
+   ======================================== */
+
+
+
+@media (max-width: 1024px) {
+  
+}
+
+@media (max-width: 768px) {
+  
+}
+
+
+/* ========================================
+   🔘 フィルターボタン - 超小型（強制適用）
+   ======================================== */
+
+.filter-section {
+  margin-bottom: 15px !important;
+}
+
+.filter-label {
+  display: block !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  margin-bottom: 5px !important;
+  color: #333 !important;
+}
+
+.filter-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 3px !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+}
+
+.filter-btn {
+  flex: 1 !important;
+  min-width: 40px !important;
+  padding: 5px 2px !important;
+  font-size: 8px !important;
+  border: 1px solid #e0e0e0 !important;
+  background: white !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  line-height: 1.1 !important;
+}
+
+.filter-btn:hover {
+  background: #f5f5f5 !important;
+  border-color: #667eea !important;
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-color: #667eea !important;
+}
+
+@media (max-width: 768px) {
+  .filter-btn {
+    font-size: 7px !important;
+    padding: 4px 1px !important;
+    min-width: 38px !important;
+  }
+}
+
+@media (max-width: 375px) {
+  .filter-btn {
+    font-size: 6px !important;
+    padding: 3px 1px !important;
+    min-width: 35px !important;
+  }
+}
+
+/* ========================================
+   店舗紹介グリッド修正
+   iPhoneXR: 2列、iPad: 3列
+   ======================================== */
+
+/* デフォルト（PC）: 3列 */
+.shop-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 30px;
+}
+
+/* iPad（768px〜1024px）: 3列 */
+@media (max-width: 1024px) and (min-width: 768px) {
+  .shop-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+}
+
+/* iPhoneXR（414px〜767px）: 2列 */
+@media (max-width: 767px) and (min-width: 414px) {
+  .shop-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* 小型スマホ（〜413px）: 2列 */
+@media (max-width: 413px) {
+  .shop-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+/* 店舗カード */
+.shop-intro-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px; /* 高さを確保 */
+}
+
+.shop-intro-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* ヘッダー */
+.shop-intro-header {
+  margin-bottom: 12px;
+}
+
+.shop-intro-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 44px; /* 2行分確保 */
+}
+
+.shop-category-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+/* ボディ */
+.shop-intro-body {
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+.shop-intro-description {
+  font-size: 13px;
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 62px; /* 3行分確保 */
+}
+
+.shop-signature {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f7fafc;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+}
+
+.signature-label {
+  font-size: 11px;
+  color: #718096;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.signature-text {
+  font-size: 12px; /* 看板メニューのテキストサイズ縮小 */
+  color: #2d3748;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* フッター */
+.shop-intro-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.shop-website-link {
+  font-size: 12px;
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.shop-website-link:hover {
+  color: #764ba2;
+}
+
+/* スマホでのカード調整 */
+@media (max-width: 767px) {
+  .shop-intro-card {
+    padding: 12px;
+    min-height: 180px;
+  }
+  
+  .shop-intro-name {
+    font-size: 14px;
+    min-height: 40px;
+  }
+  
+  .shop-intro-description {
+    font-size: 12px;
+    min-height: 56px;
+  }
+  
+  .shop-category-badge {
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+  
+  .signature-text {
+    font-size: 11px;
+  }
+  
+  .shop-website-link {
+    font-size: 11px;
+  }
+}
+
+/* 超小型画面での調整 */
+@media (max-width: 413px) {
+  .shop-intro-card {
+    padding: 10px;
+    min-height: 170px;
+  }
+  
+  .shop-intro-name {
+    font-size: 13px;
+    min-height: 38px;
+  }
+  
+  .shop-intro-description {
+    font-size: 11px;
+    -webkit-line-clamp: 2;
+    min-height: 44px; /* 2行に縮小 */
+  }
+}
+
+/* ========================================
+   フィルターボタン - 2x2グリッド（最終版）
+   ======================================== */
+.filter-section {
+  margin-bottom: 20px !important;
+}
+
+.filter-label {
+  display: block !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin-bottom: 10px !important;
+  color: #2d3748 !important;
+}
+
+.filter-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+}
+
+.filter-btn {
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border: 2px solid #e2e8f0 !important;
+  background: white !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  text-align: center !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+.filter-btn:hover {
+  background: #f7fafc !important;
+  border-color: #667eea !important;
+  transform: translateY(-1px) !important;
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-color: #667eea !important;
+}
+
+@media (max-width: 768px) {
+  .filter-buttons { gap: 8px !important; }
+  .filter-btn { padding: 10px 15px !important; font-size: 13px !important; }
+}
+
+@media (max-width: 480px) {
+  .filter-buttons { gap: 6px !important; }
+  .filter-btn { padding: 8px 12px !important; font-size: 12px !important; }
+}
+/* ========================================
+   📌 ユーザーページ - 投稿グリッド表示
+   ======================================== */
+
+/* 2列グリッド（iPhone XR対応） */
+.user-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+}
+
+/* PC・タブレットでは3列 */
+@media (min-width: 768px) {
+  .user-posts-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+/* 新しい投稿カードスタイル（トピックスと統一） */
+.user-post-card-new {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+.user-post-card-new:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.user-post-card-new .post-card-header {
+  margin-bottom: 12px;
+}
+
+.user-post-card-new .post-shop {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2d3748;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 44px;
+}
+
+.user-post-card-new .post-card-body {
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+.user-post-card-new .crowd-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.user-post-card-new .post-comment {
+  font-size: 13px;
+  color: #4a5568;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 62px;
+}
+
+.user-post-card-new .post-card-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-post-card-new .post-date {
+  font-size: 12px;
+  color: #718096;
+}
+
+/* 編集・削除ボタン */
+.post-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-edit-small,
+.btn-delete-small {
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-edit-small {
+  background: #667eea;
+  color: white;
+}
+
+.btn-edit-small:hover {
+  background: #5568d3;
+  transform: translateY(-1px);
+}
+
+.btn-delete-small {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-delete-small:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* スマホでの調整 */
+@media (max-width: 767px) {
+  .user-post-card-new {
+    padding: 12px;
+    min-height: 180px;
+  }
+  
+  .user-post-card-new .post-shop {
+    font-size: 14px;
+    min-height: 40px;
+  }
+  
+  .user-post-card-new .post-comment {
+    font-size: 12px;
+    min-height: 56px;
+  }
+  
+  .btn-edit-small,
+  .btn-delete-small {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+}
+
+/* 超小型画面での調整 */
+@media (max-width: 413px) {
+  .user-posts-grid {
+    gap: 12px;
+  }
+  
+  .user-post-card-new {
+    padding: 10px;
+    min-height: 170px;
+  }
+  
+  .user-post-card-new .post-shop {
+    font-size: 13px;
+    min-height: 38px;
+  }
+  
+  .user-post-card-new .post-comment {
+    font-size: 11px;
+    -webkit-line-clamp: 2;
+    min-height: 44px;
+  }
+}

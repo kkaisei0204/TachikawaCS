@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ user.username }} のプロフィール | 立川混雑シェア</title>
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <style>
+    /* === 共通: 固定レイアウト用CSS === */
+    body {
+      background-color: #f4f7f6;
+      margin: 0;
+      padding-top: 60px; /* ヘッダー高さ */
+      padding-bottom: 60px; /* フッター高さ */
+      min-height: 100vh;
+      font-family: "Noto Sans JP", sans-serif;
+    }
+
+    /* === z-index（重なり順）の整理 === */
+    /* ヘッダー固定 (黒色) */
+    header {
+      background-color: #2f2f33;
+      color: white;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 60px;
+      z-index: 1002; /* オーバーレイより上 */
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-sizing: border-box;
+    }
+    .app_name h1 { margin: 0; font-size: 18px; font-weight: bold; color: white; }
+
+    /* ハンバーガーメニューボタン */
+    .mobile-menu-toggle { 
+      background: transparent; border: none; width: 44px; height: 44px; 
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      position: relative;
+    }
+    .mobile-menu-toggle span { display: block; width: 24px; height: 2px; background-color: white; margin: 3px 0; transition: 0.3s; border-radius: 2px; }
+    .mobile-menu-toggle.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .mobile-menu-toggle.active span:nth-child(2) { opacity: 0; }
+    .mobile-menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+    /* オーバーレイ（暗幕） */
+    .menu-overlay {
+      z-index: 1000 !important;
+    }
+    .menu-outer01 {
+      z-index: 1001 !important;
+    }
+
+    /* === フッター固定 (著作権表示) === */
+    footer {
+      position: fixed; 
+      bottom: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 50px; 
+      background-color: #2f2f33; 
+      color: #ffffff; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      z-index: 500; /* メニューより下 */
+      font-size: 12px;
+      font-weight: bold;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* コンテンツ調整 */
+    .container { max-width: 800px; margin: 0 auto; padding: 20px 15px; }
+    
+    .user-profile { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+    .profile-icon-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #333; }
+    .profile-info h1 { margin: 0 0 5px 0; font-size: 20px; }
+    .profile-bio { font-size: 13px; color: #666; margin: 0 0 10px 0; }
+    
+    .profile-stats { display: flex; justify-content: space-around; border-top: 1px solid #eee; padding-top: 15px; }
+    .stat-item { text-align: center; }
+    .stat-value { font-weight: bold; font-size: 18px; color: #333; }
+    .stat-label { font-size: 11px; color: #999; }
+
+    /* グリッド設定 */
+    .user-posts-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    /* タブレット（768px〜1199px）: 3列 */
+    @media (max-width: 1199px) {
+      .user-posts-grid { 
+        grid-template-columns: repeat(3, 1fr); 
+      }
+    }
+    
+    /* スマートフォン大（414px〜767px）iPhone XR以上: 2列 */
+    @media (max-width: 767px) {
+      .user-posts-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 10px; 
+      }
+    }
+    
+    /* スマートフォン小（414px未満）: 1列 */
+    @media (max-width: 413px) {
+      .user-posts-grid { 
+        grid-template-columns: 1fr; 
+      }
+    }
+
+    /* 投稿カード */
+    .user-post-card { 
+      background: white; 
+      padding: 15px; 
+      border-radius: 8px; 
+      border: 1px solid #eee;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .post-shop { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+    .post-comment { font-size: 13px; margin-bottom: 10px; color: #555; }
+    .post-meta { font-size: 11px; color: #999; display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+    
+    /* 編集削除ボタンエリア */
+    .post-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+    .btn-edit, .btn-delete {
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+      flex: 1;
+    }
+    .btn-edit { background-color: #edf2f7; color: #4a5568; }
+    .btn-delete { background-color: #fff5f5; color: #c53030; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="app_name"><h1>立川混雑シェア</h1></div>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="menu-outer01">
+      <ul class="sample_menu_list01">
+        <li><a href="{{ url_for('main.index') }}">トップ</a></li>
+        <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
+        <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('main.admin_dashboard') }}">管理者パネル</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% else %}
+          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+        {% endif %}
+      </ul>        
+    </div>
+  </header>
+  <div class="menu-overlay" id="menuOverlay"></div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages" style="position:fixed; top:70px; right:20px; z-index:1100; max-width:300px;">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}" style="background:white; padding:12px 16px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); margin-bottom:10px; border-left:4px solid #4CAF50; animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 2.5s forwards; font-size:14px; color:#333;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+      
+      <style>
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        @keyframes fadeOut {
+          from {
+            opacity: 1;
+            transform: translateX(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateX(400px);
+          }
+        }
+      </style>
+    {% endif %}
+  {% endwith %}
+
+  <div class="container">
+    <div class="user-profile">
+      <div class="profile-header">
+        <img src="{{ url_for('static', filename=user.icon_path) }}" alt="{{ user.username }}" class="profile-icon-img">
+        <div class="profile-info">
+          <h1>{{ user.username }}</h1>
+          <p class="profile-bio">{{ user.bio if user.bio else '自己紹介はまだありません' }}</p>
+          {% if current_user.is_authenticated and current_user.username == user.username %}
+            <a href="{{ url_for('main.profile_edit') }}" style="font-size:12px; color:#333; text-decoration:none; border:1px solid #333; padding:4px 8px; border-radius:4px; display:inline-block; margin-top:5px;">プロフィール編集</a>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="profile-stats">
+        <div class="stat-item"><div class="stat-value">{{ user_posts|length }}</div><div class="stat-label">投稿</div></div>
+        <div class="stat-item"><div class="stat-value">{{ user_posts|sum(attribute='helpful_count') }}</div><div class="stat-label">いいね</div></div>
+      </div>
+    </div>
+
+    <h3 style="font-size:16px; margin-bottom:10px;">{{ user.username }} さんの投稿</h3>
+    <div class="user-posts-grid">
+      {% for post in user_posts %}
+        <div class="user-post-card">
+          <div>
+            <div class="post-shop">{{ post.shop_name }}</div>
+            <div class="post-comment">{{ post.comment }}</div>
+          </div>
+          <div class="post-meta">
+            <span class="post-date">{{ post.timestamp[:10] }}</span>
+            <span>👍 {{ post.helpful_count }}</span>
+          </div>
+
+          {% if current_user.is_authenticated and current_user.username == user.username %}
+            <div class="post-actions">
+              <a href="{{ url_for('post.edit_post', post_id=post.id) }}" class="btn-edit">編集</a>
+              <form method="POST" action="{{ url_for('post.delete_post_route', post_id=post.id) }}" style="display: inline; flex:1;" onsubmit="return confirm('本当にこの投稿を削除しますか？');">
+                <button type="submit" class="btn-delete" style="width:100%;">削除</button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <p style="color:#999; text-align:center; grid-column: 1 / -1;">まだ投稿がありません</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 立川混雑シェアマップ</p>
+  </footer>
+
+  <script>
+    const mt=document.getElementById('mobileMenuToggle'), mo=document.querySelector('.menu-outer01'), ov=document.getElementById('menuOverlay');
+    if(mt){ const t=()=>{ [mt,mo,ov].forEach(e=>e.classList.toggle('active')); }; mt.onclick=t; ov.onclick=t; }
+  </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ shop.name }} - 立川混雑シェア</title>
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  
+  <style>
+    /* ハンバーガーメニューボタン */
+    .mobile-menu-toggle {
+      background: transparent;
+      border: none;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      z-index: 1003;
+    }
+    .mobile-menu-toggle span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background-color: white;
+      margin: 3px 0;
+      transition: all 0.3s;
+      border-radius: 2px;
+    }
+    .mobile-menu-toggle.active span:nth-child(1) {
+      transform: translateY(8px) rotate(45deg);
+    }
+    .mobile-menu-toggle.active span:nth-child(2) {
+      opacity: 0;
+    }
+    .mobile-menu-toggle.active span:nth-child(3) {
+      transform: translateY(-8px) rotate(-45deg);
+    }
+
+    /* オーバーレイ（暗幕） */
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+      z-index: 1000 !important;
+    }
+    .menu-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* メニュー本体のz-index調整 */
+    .menu-outer01 {
+      z-index: 1001 !important;
+    }
+
+    /* ヘッダーのz-index調整 */
+    header {
+      position: relative;
+      z-index: 1002;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="app_name">
+      <h1>立川混雑シェア</h1>
+    </div>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <div class="menu-outer01">
+      <ul class="sample_menu_list01">
+        <li><a href="{{ url_for('main.index') }}">トップ</a></li>
+        <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
+        <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('main.admin_panel') }}">管理者パネル</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% else %}
+          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+          <li><a href="{{ url_for('main.register') }}">新規登録</a></li>
+        {% endif %}
+      </ul>        
+    </div>
+  </header>
+  <div class="menu-overlay" id="menuOverlay"></div>
+  
+  <div class="shop-detail-container">
+    <a href="{{ url_for('main.index') }}" class="back-button">← 地図に戻る</a>
+    
+    <!-- 店舗ヘッダー -->
+    <div class="shop-header">
+      <h1>{{ shop.name }}</h1>
+      <p>{{ shop.address }}</p>
+      {% if shop.url %}
+        <p><a href="{{ shop.url }}" target="_blank" style="color: white; text-decoration: underline;">公式サイト</a></p>
+      {% endif %}
+    </div>
+    
+    <div class="content-grid">
+      <!-- 左側：最近の投稿 -->
+      <div class="section-card">
+        <h2 class="section-title">
+          最近の投稿（最新10件）
+        </h2>
+        
+        {% if recent_posts %}
+          {% for post in recent_posts %}
+            <div class="post-item">
+              <div class="post-header">
+                <span class="prediction-level status-{{ post.crowd_level }}">{{ post.crowd_level }}</span>
+                <span class="post-time">{{ post.time_ago }}</span>
+              </div>
+              <div class="post-comment">{{ post.comment }}</div>
+              <div style="margin-top: 8px; font-size: 13px; color: #666;">
+                by {{ post.user_name }} | 👍 {{ post.helpful_count }} 👎 {{ post.not_helpful_count }}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="no-data-message">
+            まだ投稿がありません
+          </div>
+        {% endif %}
+      </div>
+      
+      <!-- 右側：AI予測 -->
+      <div class="section-card">
+        <h2 class="section-title">
+          AI混雑予測
+        </h2>
+        
+        {% if prediction_data.has_enough_data %}
+          <!-- 曜日情報 -->
+          <div style="margin-bottom: 15px; padding: 10px; background: #e3f2fd; border-radius: 6px; text-align: center;">
+            <strong>{{ prediction_data.current_weekday_name }}の予測</strong>
+          </div>
+          
+          <!-- おすすめ時間帯 -->
+          {% if best_time %}
+            <div class="best-time-card">
+              <h3>おすすめ時間帯</h3>
+              <div class="time">{{ best_time.time_range }}</div>
+              <p>{{ best_time.predicted_level }}の可能性が高いです</p>
+              <p style="font-size: 13px; margin-top: 5px;">過去データ {{ best_time.data_count }}件から予測</p>
+            </div>
+          {% endif %}
+          
+          <!-- 時間別予測 -->
+          {% for pred in prediction_data.predictions %}
+            <div class="prediction-item">
+              <span class="prediction-time">{{ pred.time_range }}</span>
+              <span class="prediction-level status-{{ pred.predicted_level }}">{{ pred.predicted_level }}</span>
+              <span class="prediction-confidence">確度 {{ pred.confidence }}%</span>
+            </div>
+          {% endfor %}
+          
+          <div class="last-updated">
+            最終更新: {{ prediction_data.last_updated }}
+          </div>
+          
+          <div style="margin-top: 15px; padding: 12px; background: #e3f2fd; border-radius: 6px; font-size: 14px;">
+            <strong>データ:</strong> {{ prediction_data.data_period }}・{{ prediction_data.current_weekday_name }}の投稿{{ prediction_data.total_posts }}件から予測
+          </div>
+        {% else %}
+          <div class="data-insufficient">
+            <h3>データ不足</h3>
+            <p>AI予測には最低10件の投稿が必要です</p>
+            <p>現在: <strong>{{ prediction_data.total_posts }}件</strong> / 10件</p>
+            <p style="margin-top: 15px;">あと<strong>{{ 10 - prediction_data.total_posts }}件</strong>の投稿で予測が表示されます！</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <p>© 2025 立川混雑シェアマップ</p>
+  </footer>
+
+  <script>
+    // ハンバーガーメニュー
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    const menuOuter = document.querySelector('.menu-outer01');
+    const menuOverlay = document.getElementById('menuOverlay');
+
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        menuToggle.classList.toggle('active');
+        menuOuter.classList.toggle('active');
+        menuOverlay.classList.toggle('active');
+      });
+
+      menuOverlay.addEventListener('click', () => {
+        menuToggle.classList.remove('active');
+        menuOuter.classList.remove('active');
+        menuOverlay.classList.remove('active');
+      });
+
+      menuOuter.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          menuToggle.classList.remove('active');
+          menuOuter.classList.remove('active');
+          menuOverlay.classList.remove('active');
+        });
+      });
+    }
+  </script>
+</body>
+</html>

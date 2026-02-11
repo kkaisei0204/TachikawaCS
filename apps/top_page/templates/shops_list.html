@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>飲食店一覧 - 立川混雑シェア</title>
+  
+  <!-- 外部CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="混雑シェア">
+  
+  <style>
+    .shops-list-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 15px;
+    }
+    
+    .page-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .page-header h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .page-header p {
+      color: #666;
+      font-size: 16px;
+    }
+    
+    .search-filter-section {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .search-box {
+      margin-bottom: 20px;
+    }
+    
+    .search-box label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    
+    .search-input-wrapper {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .search-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .category-filter {
+      border-top: 1px solid #e0e0e0;
+      padding-top: 20px;
+    }
+    
+    .category-filter label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #333;
+    }
+    
+    .category-checkboxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    
+    .category-checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .category-checkbox-item:hover {
+      background: #e9ecef;
+    }
+    
+    .category-checkbox-item input {
+      cursor: pointer;
+    }
+    
+    .category-checkbox-item label {
+      cursor: pointer;
+      margin: 0;
+      font-weight: normal;
+      color: #495057;
+    }
+    
+    .shop-cards-grid {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+      gap: 20px !important;
+      margin-top: 20px !important;
+      width: 100% !important;
+    }
+    
+    .shop-intro-card {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .shop-intro-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .shop-intro-card > a {
+      cursor: pointer;
+    }
+    
+    .shop-intro-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      gap: 6px;
+    }
+    
+    .shop-intro-name {
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+      margin: 0;
+      flex: 1;
+      line-height: 1.3;
+    }
+    
+    .shop-category-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    
+    .shop-intro-body {
+      margin-bottom: 8px;
+    }
+    
+    .shop-intro-description {
+      color: #666;
+      font-size: 11px;
+      line-height: 1.4;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .shop-signature {
+      background: #f8f9fa;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      border-left: 2px solid #667eea;
+      margin-bottom: 6px;
+    }
+    
+    .signature-label {
+      font-weight: 600;
+      color: #667eea;
+    }
+    
+    .signature-text {
+      color: #495057;
+    }
+    
+    .shop-intro-footer {
+      display: block;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #f0f0f0;
+    }
+    
+    .shop-website-link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 11px;
+      transition: color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    
+    .shop-website-link:hover {
+      color: #764ba2;
+    }
+    
+    .shop-website-link::after {
+      content: '→';
+      font-size: 14px;
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+      font-size: 16px;
+    }
+    
+    /* タブレット（768px〜1199px）: 3列 */
+    @media (max-width: 1199px) {
+      .page-header h1 {
+        font-size: 26px;
+      }
+      
+      .shop-cards-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+    }
+    
+    /* スマートフォン大（414px〜767px）iPhone XR以上: 2列 */
+    @media (max-width: 767px) {
+      .page-header h1 {
+        font-size: 24px;
+      }
+      
+      .shop-cards-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      
+      .category-checkboxes {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    /* スマートフォン小（414px未満）: 1列 */
+    @media (max-width: 413px) {
+      .page-header h1 {
+        font-size: 22px;
+      }
+      
+      .shop-cards-grid {
+        grid-template-columns: 1fr !important;
+      }
+      
+      .category-checkboxes {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* メニューオーバーレイとメニューのz-index設定 */
+    .menu-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+    
+    .menu-overlay.active {
+      display: block;
+    }
+    
+    .menu-outer01 {
+      z-index: 1000;
+    }
+    
+    .shops-list-container {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="app_name">
+      <h1>立川混雑シェア</h1>
+    </div>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <div class="menu-outer01">
+      <ul class="sample_menu_list01">
+        <li><a href="{{ url_for('main.index') }}">トップ</a></li>
+        <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
+        <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('main.admin_panel') }}">管理者パネル</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% else %}
+          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+          <li><a href="{{ url_for('main.register') }}">新規登録</a></li>
+        {% endif %}
+      </ul>        
+    </div>
+  </header>
+  <div class="menu-overlay" id="menuOverlay"></div>
+
+  <div class="shops-list-container">
+    <div class="page-header">
+      <h1>立川市の飲食店一覧</h1>
+      <p>全{{ shops|length }}店舗の混雑状況を確認できます</p>
+    </div>
+
+    <!-- 検索・カテゴリーフィルターセクション -->
+    <div class="search-filter-section">
+      <!-- 店舗名検索 -->
+      <div class="search-box">
+        <label for="shop-search">店舗名で検索</label>
+        <div class="search-input-wrapper">
+          <input 
+            type="text" 
+            id="shop-search" 
+            class="search-input" 
+            placeholder="例: 大原亭、一風堂立川店"
+          />
+          <button class="search-btn" id="search-btn">検索</button>
+        </div>
+      </div>
+      
+      <!-- カテゴリーフィルター -->
+      <div class="category-filter">
+        <label>カテゴリーで絞り込み</label>
+        <div class="category-checkboxes">
+          <div class="category-checkbox-item">
+            <input type="checkbox" id="cat-cafe" value="カフェ" class="category-checkbox">
+            <label for="cat-cafe">カフェ</label>
+          </div>
+          <div class="category-checkbox-item">
+            <input type="checkbox" id="cat-restaurant" value="レストラン" class="category-checkbox">
+            <label for="cat-restaurant">レストラン</label>
+          </div>
+          <div class="category-checkbox-item">
+            <input type="checkbox" id="cat-ramen" value="ラーメン屋" class="category-checkbox">
+            <label for="cat-ramen">ラーメン屋</label>
+          </div>
+          <div class="category-checkbox-item">
+            <input type="checkbox" id="cat-fastfood" value="ファーストフード" class="category-checkbox">
+            <label for="cat-fastfood">ファーストフード</label>
+          </div>
+          <div class="category-checkbox-item">
+            <input type="checkbox" id="cat-famires" value="ファミリーレストラン" class="category-checkbox">
+            <label for="cat-famires">ファミリーレストラン</label>
+          </div>
+          <div class="category-checkbox-item">
+            <input type="checkbox" id="cat-bento" value="弁当屋" class="category-checkbox">
+            <label for="cat-bento">弁当屋</label>
+          </div>
+          <div class="category-checkbox-item">
+            <input type="checkbox" id="cat-izakaya" value="居酒屋" class="category-checkbox">
+            <label for="cat-izakaya">居酒屋</label>
+          </div>
+          <div class="category-checkbox-item">
+            <input type="checkbox" id="cat-other" value="該当しない" class="category-checkbox">
+            <label for="cat-other">該当しない</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 店舗カード一覧 -->
+    <div class="shop-cards-grid" id="shop-cards-grid">
+      {% for shop in shops %}
+        <div class="shop-intro-card" 
+             data-shop-name="{{ shop.name }}" 
+             data-category="{{ shop.category }}">
+          <a href="{{ url_for('main.shop_detail', shop_name=shop.name) }}" 
+             style="text-decoration: none; color: inherit; display: block;">
+            <div class="shop-intro-header">
+              <h3 class="shop-intro-name">{{ shop.name }}</h3>
+              <span class="shop-category-badge">{{ shop.category }}</span>
+            </div>
+            <div class="shop-intro-body">
+              <p class="shop-intro-description">{{ shop.description }}</p>
+              {% if shop.signature %}
+                <div class="shop-signature">
+                  <span class="signature-label">看板メニュー：</span>
+                  <span class="signature-text">{{ shop.signature }}</span>
+                </div>
+              {% endif %}
+            </div>
+          </a>
+          <div class="shop-intro-footer">
+            {% if shop.url %}
+              <a href="{{ shop.url }}" target="_blank" class="shop-website-link" onclick="event.stopPropagation();">
+                公式サイト
+              </a>
+            {% else %}
+              <span style="color: #999; font-size: 13px;">公式サイトなし</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="no-results" id="no-results" style="display: none;">
+      検索条件に一致する店舗が見つかりませんでした
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 立川混雑シェアマップ</p>
+  </footer>
+
+  <script>
+    // モバイルメニュートグル
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    const menuOuter = document.querySelector('.menu-outer01');
+    const menuOverlay = document.getElementById('menuOverlay');
+    
+    if (menuToggle && menuOuter && menuOverlay) {
+      menuToggle.addEventListener('click', function() {
+        this.classList.toggle('active');
+        menuOuter.classList.toggle('active');
+        menuOverlay.classList.toggle('active');
+      });
+      
+      menuOverlay.addEventListener('click', function() {
+        menuToggle.classList.remove('active');
+        menuOuter.classList.remove('active');
+        this.classList.remove('active');
+      });
+      
+      const menuLinks = menuOuter.querySelectorAll('a');
+      menuLinks.forEach(link => {
+        link.addEventListener('click', function() {
+          menuToggle.classList.remove('active');
+          menuOuter.classList.remove('active');
+          menuOverlay.classList.remove('active');
+        });
+      });
+    }
+
+    // 検索とフィルター機能
+    const searchInput = document.getElementById('shop-search');
+    const searchBtn = document.getElementById('search-btn');
+    const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+    const shopCards = document.querySelectorAll('.shop-intro-card');
+    const noResults = document.getElementById('no-results');
+
+    function filterShops() {
+      const searchText = searchInput.value.toLowerCase().trim();
+      const selectedCategories = Array.from(categoryCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+      let visibleCount = 0;
+
+      shopCards.forEach(card => {
+        const shopName = card.getAttribute('data-shop-name').toLowerCase();
+        const category = card.getAttribute('data-category');
+
+        const matchesSearch = searchText === '' || shopName.includes(searchText);
+        const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(category);
+
+        if (matchesSearch && matchesCategory) {
+          card.style.display = 'block';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    searchBtn.addEventListener('click', filterShops);
+    searchInput.addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') {
+        filterShops();
+      }
+    });
+    searchInput.addEventListener('input', filterShops);
+
+    categoryCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', filterShops);
+    });
+  </script>
+
+</body>
+</html>

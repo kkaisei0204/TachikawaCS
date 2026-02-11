@@ -1,0 +1,636 @@
+{# 参考にさせてもらったサイト : https://qiita.com/mitch0807/items/7ed4eaf6253a9b879ae7 #}
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>立川混雑シェア - トップページ</title>
+  
+  <!-- Leaflet（地図ライブラリ） -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  
+  <!-- 外部CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="混雑シェア">
+  
+  <style>
+    /* 検索・フィルターセクションのスタイル */
+    .search-filter-section {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .search-box {
+      margin-bottom: 20px;
+    }
+    
+    .search-box label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    
+    .search-input-wrapper {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .search-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .search-btn:active {
+      transform: translateY(0);
+    }
+    
+    .category-filter {
+      border-top: 1px solid #e0e0e0;
+      padding-top: 20px;
+    }
+    
+    .category-filter label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #333;
+    }
+    
+    .category-checkboxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    
+    .category-checkbox-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+    
+    .category-checkbox-item:hover {
+      background: #e9ecef;
+    }
+    
+    .category-checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      cursor: pointer;
+    }
+    
+    .category-checkbox-item label {
+      margin: 0;
+      font-weight: 500;
+      cursor: pointer;
+      flex: 1;
+    }
+    
+    @media (max-width: 768px) {
+      .search-input-wrapper {
+        flex-direction: column;
+      }
+      
+      .search-btn {
+        width: 100%;
+      }
+      
+      .category-checkboxes {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      
+      .category-checkbox-item {
+        padding: 8px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="app_name">
+      <h1>立川混雑シェア</h1>
+    </div>
+    <!-- モバイル用ハンバーガーメニューボタン -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <div class="menu-outer01">
+      <ul class="sample_menu_list01">
+        <li><a href="{{ url_for('main.index') }}">トップ</a></li>
+        <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
+        <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('main.admin_panel') }}">管理者パネル</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% else %}
+          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+          <li><a href="{{ url_for('main.register') }}">新規登録</a></li>
+        {% endif %}
+      </ul>        
+    </div>
+  </header>
+  <div class="menu-overlay" id="menuOverlay"></div>
+  
+
+  
+  <!-- フラッシュメッセージ表示 -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  
+  <div class="container">
+  <!-- お知らせセクション -->
+    <div class="notice-section">
+      <h2>ノート</h2>
+      <p>立川市内の混雑状況をリアルタイムで共有できるサービスです。</p>
+      <p>地図上のマーカーをクリックすると、各店舗の詳細情報とAI予測が確認できます。</p>
+      <p style="color: #856404; font-weight: 600; margin-top: 10px;">※ AI予測は過去3ヶ月に10件以上の投稿がある店舗で利用可能です</p>
+    </div>    
+<!-- 地図セクション -->
+    <div id="map-section" class="map-section">
+      <h2>混雑状況マップ</h2>
+      
+      <!-- 検索・カテゴリーフィルターセクション -->
+      <div class="search-filter-section">
+        <!-- 店舗名検索 -->
+        <div class="search-box">
+          <label for="shop-search">店舗名で検索</label>
+          <div class="search-input-wrapper">
+            <input 
+              type="text" 
+              id="shop-search" 
+              class="search-input" 
+              placeholder="例: 大原亭、一風堂立川店"
+            />
+            <button class="search-btn" id="search-btn">検索</button>
+          </div>
+        </div>
+        
+        <!-- カテゴリーフィルター -->
+        <div class="category-filter">
+          <label>カテゴリーで絞り込み</label>
+          <div class="category-checkboxes">
+            <div class="category-checkbox-item">
+              <input type="checkbox" id="cat-cafe" value="カフェ" class="category-checkbox">
+              <label for="cat-cafe">カフェ</label>
+            </div>
+            <div class="category-checkbox-item">
+              <input type="checkbox" id="cat-restaurant" value="レストラン" class="category-checkbox">
+              <label for="cat-restaurant">レストラン</label>
+            </div>
+            <div class="category-checkbox-item">
+              <input type="checkbox" id="cat-ramen" value="ラーメン屋" class="category-checkbox">
+              <label for="cat-ramen">ラーメン屋</label>
+            </div>
+            <div class="category-checkbox-item">
+              <input type="checkbox" id="cat-fastfood" value="ファーストフード" class="category-checkbox">
+              <label for="cat-fastfood">ファーストフード</label>
+            </div>
+            <div class="category-checkbox-item">
+              <input type="checkbox" id="cat-famires" value="ファミリーレストラン" class="category-checkbox">
+              <label for="cat-famires">ファミリーレストラン</label>
+            </div>
+            <div class="category-checkbox-item">
+              <input type="checkbox" id="cat-bento" value="弁当屋" class="category-checkbox">
+              <label for="cat-bento">弁当屋</label>
+            </div>
+            <div class="category-checkbox-item">
+              <input type="checkbox" id="cat-izakaya" value="居酒屋" class="category-checkbox">
+              <label for="cat-izakaya">居酒屋</label>
+            </div>
+            <div class="category-checkbox-item">
+              <input type="checkbox" id="cat-other" value="該当しない" class="category-checkbox">
+              <label for="cat-other">該当しない</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 混雑状況フィルター  -->
+      <div class="filter-section">
+        <label class="filter-label">混雑状況で絞り込み：</label>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">
+            すべて
+          </button>
+          <button class="filter-btn" data-filter="空いている">
+            🟢 空いている
+          </button>
+          <button class="filter-btn" data-filter="やや混雑">
+            🟡 やや混雑
+          </button>
+          <button class="filter-btn" data-filter="満席">
+            🔴 満席
+          </button>
+        </div>
+      </div>
+      
+      <div id="map"></div>
+    </div>
+  </div>
+  
+  <footer>
+    <p>© 2025 立川混雑シェアマップ</p>
+  </footer>
+  
+  <script>
+    // カテゴリーマッピング（詳細カテゴリー → 8つのカテゴリー）
+    const categoryMapping = {
+      // カフェ
+      'カフェ': 'カフェ',
+      'カフェレストラン': 'カフェ',
+      'カフェダイニング': 'カフェ',
+      '古民家カフェ': 'カフェ',
+      
+      // レストラン
+      'レストラン': 'レストラン',
+      'イタリアン': 'レストラン',
+      'イタリアンバル': 'レストラン',
+      'フレンチ': 'レストラン',
+      '洋食': 'レストラン',
+      '和食': 'レストラン',
+      '定食': 'レストラン',
+      '中華': 'レストラン',
+      '韓国料理': 'レストラン',
+      'アメリカン': 'レストラン',
+      'アウトドアダイニング': 'レストラン',
+      
+      // ラーメン屋
+      'ラーメン': 'ラーメン屋',
+      
+      // ファーストフード
+      'ファストフード': 'ファーストフード',
+      '牛丼': 'ファーストフード',
+      
+      // ファミリーレストラン
+      'ファミレス': 'ファミリーレストラン',
+      
+      // 弁当屋（該当なし）
+      
+      // 居酒屋
+      '居酒屋': '居酒屋',
+      '創作居酒屋': '居酒屋',
+      'もつ鍋': '居酒屋',
+      '海鮮居酒屋': '居酒屋',
+      
+      // その他は「該当しない」
+    };
+    
+    // Leaflet地図の初期化
+    document.addEventListener('DOMContentLoaded', () => {
+      const tachikawaBounds = [
+        [35.680, 139.390],
+        [35.730, 139.445]
+      ];
+      
+      const map = L.map('map', {
+        center: [35.6984, 139.4138],  // 立川駅（確実に中心）
+        zoom: 15,
+        minZoom: 13,
+        maxZoom: 18,
+        maxBounds: tachikawaBounds,
+        maxBoundsViscosity: 1.0,
+        dragging: true,
+        touchZoom: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true,
+        zoomControl: true,
+        tap: true
+      });
+
+      // OSMタイルの追加
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18,
+      }).addTo(map);
+
+      // 実際の投稿データ（Pythonから渡される）
+      const mapData = {{ map_markers | tojson | safe }};
+      
+      console.log('地図データ:', mapData);
+
+      // 混雑度によって色を変える
+      const colorMap = {
+        "空いている": "#4caf50",
+        "やや混雑": "#ff9800",
+        "満席": "#f44336",
+      };
+
+      // マーカーを格納する配列
+      let allMarkers = [];
+      
+      // 現在のフィルター状態
+      let currentCrowdFilter = 'all';
+      let selectedCategories = new Set();
+
+      // マーカーを追加
+      if (mapData && mapData.length > 0) {
+        mapData.forEach(place => {
+          console.log('マーカー追加:', place.shop_name, place.lat, place.lng, 'AI予測:', place.has_ai_prediction);
+          
+          const marker = L.circleMarker([place.lat, place.lng], {
+            radius: 10,
+            color: colorMap[place.crowd_level] || "#2196f3",
+            fillColor: colorMap[place.crowd_level] || "#2196f3",
+            fillOpacity: 0.8,
+            weight: 2
+          });
+
+          // ポップアップの内容を作成
+          let detailButton = '';
+          
+          // 過去3ヶ月に10件以上あればAI予測ページへのリンクを表示
+          if (place.has_ai_prediction) {
+            detailButton = `
+              <div style="margin: 12px 0;">
+                <a href="/shop/${encodeURIComponent(place.shop_name)}" 
+                   style="display: inline-block; 
+                          width: 100%; 
+                          padding: 10px; 
+                          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                          color: white; 
+                          text-decoration: none; 
+                          border-radius: 6px; 
+                          text-align: center; 
+                          font-weight: 600;
+                          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);">
+                  AI予測を見る
+                </a>
+              </div>
+            `;
+          } else {
+            // 10件未満の場合はメッセージを表示
+            detailButton = `
+              <div style="margin: 12px 0; padding: 10px; background: #fff3cd; border-radius: 6px; text-align: center; color: #856404; font-size: 13px;">
+                <strong>AI予測利用不可</strong><br>
+                過去3ヶ月の投稿: ${place.total_posts || 0}件 / 10件<br>
+                <span style="font-size: 12px;">あと${10 - (place.total_posts || 0)}件で予測可能！</span>
+              </div>
+            `;
+          }
+          
+          // 公式サイトリンクを追加
+          let officialSiteLink = '';
+          if (place.url) {
+            officialSiteLink = `
+              <a href="${place.url}" target="_blank" 
+                 style="display: block; 
+                        width: 100%; 
+                        margin-top: 8px; 
+                        padding: 10px; 
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        color: white; 
+                        text-decoration: none; 
+                        border-radius: 6px; 
+                        font-weight: 600; 
+                        font-size: 14px; 
+                        text-align: center;
+                        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+                        transition: transform 0.2s;">
+                公式サイトへ
+              </a>
+            `;
+          } else {
+            // URLが登録されていない場合はGoogle検索リンクを表示
+            const searchQuery = encodeURIComponent(place.shop_name + ' 立川');
+            officialSiteLink = `
+              <a href="https://www.google.com/search?q=${searchQuery}" target="_blank" 
+                 style="display: block; 
+                        width: 100%; 
+                        margin-top: 8px; 
+                        padding: 10px; 
+                        background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); 
+                        color: white; 
+                        text-decoration: none; 
+                        border-radius: 6px; 
+                        font-weight: 600; 
+                        font-size: 14px; 
+                        text-align: center;
+                        box-shadow: 0 2px 8px rgba(66, 133, 244, 0.4);
+                        transition: transform 0.2s;">
+                公式サイトを検索
+              </a>
+            `;
+          }
+
+          const popupContent = `
+            <div style="min-width: 200px;">
+              <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #333; font-weight: 700; line-height: 1.4;">
+                ${place.shop_name}
+              </h3>
+              <div style="padding: 8px; background: ${colorMap[place.crowd_level] || "#2196f3"}; 
+                          color: white; border-radius: 6px; text-align: center; font-weight: 600; 
+                          margin-bottom: 8px;">
+                混雑度: ${place.crowd_level}
+              </div>
+              <div style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 6px;">
+                <div style="font-size: 13px; color: #666; margin-bottom: 4px;">
+                  <strong>カテゴリー:</strong> ${place.category || '不明'}
+                </div>
+                <div style="font-size: 13px; color: #666;">
+                  <strong>投稿時間:</strong> ${place.time_ago}
+                </div>
+              </div>
+              ${detailButton}
+              ${officialSiteLink}
+            </div>
+          `;
+
+          marker.bindPopup(popupContent);
+          
+          // カテゴリーを8つのカテゴリーに変換
+          const mainCategory = categoryMapping[place.category] || '該当しない';
+          
+          // マーカーに情報を保存
+          marker.shopData = {
+            name: place.shop_name,
+            crowdLevel: place.crowd_level,
+            category: mainCategory,
+            lat: place.lat,
+            lng: place.lng
+          };
+          
+          allMarkers.push(marker);
+          marker.addTo(map);
+        });
+      }
+
+      // フィルターボタンのクリックイベント
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          currentCrowdFilter = btn.dataset.filter;
+          applyFilters();
+        });
+      });
+      
+      // カテゴリーチェックボックスのイベント
+      document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const category = checkbox.value;
+          if (checkbox.checked) {
+            selectedCategories.add(category);
+          } else {
+            selectedCategories.delete(category);
+          }
+          applyFilters();
+        });
+      });
+      
+      // 店舗名検索
+      document.getElementById('search-btn').addEventListener('click', searchShop);
+      document.getElementById('shop-search').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          searchShop();
+        }
+      });
+      
+      function searchShop() {
+        const searchTerm = document.getElementById('shop-search').value.trim().toLowerCase();
+        
+        if (!searchTerm) {
+          alert('店舗名を入力してください');
+          return;
+        }
+        
+        // 店舗名で検索（部分一致）
+        const matchedMarkers = allMarkers.filter(marker => 
+          marker.shopData.name.toLowerCase().includes(searchTerm)
+        );
+        
+        if (matchedMarkers.length === 0) {
+          alert(`「${searchTerm}」に該当する店舗が見つかりませんでした`);
+          return;
+        }
+        
+        // 最初にマッチした店舗にズーム
+        const firstMatch = matchedMarkers[0];
+        map.setView([firstMatch.shopData.lat, firstMatch.shopData.lng], 17);
+        
+        // ポップアップを開く
+        firstMatch.openPopup();
+        
+        // 複数マッチした場合はコンソールに表示
+        if (matchedMarkers.length > 1) {
+          console.log(`${matchedMarkers.length}件の店舗が見つかりました:`, 
+            matchedMarkers.map(m => m.shopData.name));
+        }
+      }
+      
+      function applyFilters() {
+        allMarkers.forEach(marker => {
+          let show = true;
+          
+          // 混雑状況フィルター
+          if (currentCrowdFilter !== 'all' && marker.shopData.crowdLevel !== currentCrowdFilter) {
+            show = false;
+          }
+          
+          // カテゴリーフィルター
+          if (selectedCategories.size > 0 && !selectedCategories.has(marker.shopData.category)) {
+            show = false;
+          }
+          
+          if (show) {
+            if (!map.hasLayer(marker)) {
+              marker.addTo(map);
+            }
+          } else {
+            if (map.hasLayer(marker)) {
+              map.removeLayer(marker);
+            }
+          }
+        });
+      }
+    });
+
+    // モバイルメニュー
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    const menuOuter = document.querySelector('.menu-outer01');
+    const menuOverlay = document.getElementById('menuOverlay');
+
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        menuToggle.classList.toggle('active');
+        menuOuter.classList.toggle('active');
+        menuOverlay.classList.toggle('active');
+      });
+
+      menuOverlay.addEventListener('click', () => {
+        menuToggle.classList.remove('active');
+        menuOuter.classList.remove('active');
+        menuOverlay.classList.remove('active');
+      });
+
+      menuOuter.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          menuToggle.classList.remove('active');
+          menuOuter.classList.remove('active');
+          menuOverlay.classList.remove('active');
+        });
+      });
+    }
+  </script>
+</body>
+</html>

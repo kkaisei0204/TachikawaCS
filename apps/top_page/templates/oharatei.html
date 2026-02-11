@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大原亭 | 立川混雑シェア</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='reservation_style.css') }}">
+</head>
+<body>
+
+  <!--ヘッダー-->
+  <header>
+    大原亭
+  </header>
+
+  <!--ナビゲーション-->
+  <nav>
+    <a href="#about">店舗紹介</a>
+    <a href="#menu">メニュー</a>
+    <a href="#access">アクセス</a>
+    <a href="#reserve">予約</a>
+  </nav>
+
+  <!--メイン内容-->
+  <main>
+    <!--店舗紹介-->
+    <section id="about">
+      <h2>店舗紹介</h2>
+      <p>
+        炭火でじっくり焼き上げた串焼きと、こだわりの地酒が自慢の居酒屋です。
+        昭和レトロな雰囲気の中で、心温まるひとときをお過ごしください。
+      </p>
+    </section>
+
+    <!--メニュー-->
+    <section id="menu">
+      <h2>おすすめメニュー</h2>
+      <div class="menu-list">
+        <div class="menu-item">
+          <img src="https://bluegreen.jp/wp-content/uploads/2020/02/IMGP8602.jpg" alt="焼き鳥">
+          <h3>特製ねぎま串</h3>
+          <p>炭火で香ばしく焼き上げた自慢の逸品。</p>
+        </div>
+
+        <div class="menu-item">
+          <img src="https://fukudaya.online/cdn/shop/files/1088_4_5_10_1400x.jpg?v=1715853446" alt="刺身盛り">
+          <h3>本日の刺身盛り合わせ</h3>
+          <p>旬の魚を厳選してご提供します。</p>
+        </div>
+        
+        <div class="menu-item">
+          <img src="https://www.at-s.com/gourmet/featured/shizuoka_jizake/images/jizake_thumb01.jpg" alt="地酒">
+          <h3>店主厳選の地酒</h3>
+          <p>季節ごとに変わる銘酒をお楽しみください。</p>
+        </div>
+      </div>
+    </section>
+
+    <!--アクセス-->
+    <section id="access">
+      <h2>アクセス</h2>
+      <p>〒190-0023 東京都立川市柴崎町3丁目6-10</p>
+      <p>営業時間：17:00〜24:00（ラストオーダー 23:30）</p>
+      <p>定休日：月曜日</p>
+      <p>TEL：042-xxx-xxxx</p>
+      <iframe 
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1620.110799281357!2d139.4126494919281!3d35.69616409617386!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6018e1944d26a965%3A0x9ce01824db4f9c52!2z5p2x5Lqs56uL5bed5oOF5aCxSVTjgq_jg6rjgqjjgqTjgr_jg7zlsILploDlrabmoKE!5e0!3m2!1sja!2sjp!4v1762407969377!5m2!1sja!2sjp"
+        width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </section>
+
+    <!--予約-->
+    <section id="reserve">
+      <h2>ご予約</h2>
+      <p>以下のフォームからご予約を承ります。</p>
+      <form method="POST" action="{{ url_for('main.oharatei_reservation') }}">
+        <input type="text" name="customer_name" placeholder="お名前" required>
+        <input type="tel" name="phone" placeholder="電話番号" required>
+        <input type="date" name="reservation_date" required>
+        <input type="time" name="reservation_time" required>
+        <input type="number" name="people" placeholder="人数" min="1" max="20" required>
+        <textarea name="comment" placeholder="ご要望（任意）"></textarea>
+        <button type="submit">予約を送信</button>
+      </form>
+      <div style="margin-top: 30px; text-align: center;">
+        <a href="{{ url_for('main.index') }}" 
+           style="display: inline-block; padding: 12px 30px; background-color: #666; 
+                  color: white; text-decoration: none; font-weight: bold; border-radius: 8px;
+                  font-size: 1em;">
+          ← トップページに戻る
+        </a>
+      </div>
+    </section>
+
+    <!--フッター-->
+    <footer id="footer"> 
+      &copy; 2025 大原亭 All Rights Reserved. | Powered by 立川混雑シェアマップ
+    </footer>
+  </main>
+
+</body>
+</html>

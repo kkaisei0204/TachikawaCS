@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}投稿管理 | 管理者ダッシュボード{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_layout.css') }}">
+
+<div class="admin-container">
+    <aside class="admin-sidebar">
+        <h2 class="sidebar-title">管理メニュー</h2>
+        <ul class="sidebar-menu">
+            <li><a href="{{ url_for('main.admin_dashboard') }}">ダッシュボード</a></li>
+            <li><a href="{{ url_for('main.admin_panel') }}">ユーザー管理</a></li>
+            <li><a class="active" href="{{ url_for('main.admin_posts_list') }}">投稿管理</a></li>
+            <li><a href="{{ url_for('main.admin_panel') }}">管理トップへ戻る</a></li>
+        </ul>
+    </aside>
+
+    <main class="admin-main-content">
+        <h1 class="main-title">投稿管理</h1>
+        <p class="summary-text">システムに投稿された全ての最新情報（{{ all_posts | length }}件）を一覧表示しています。</p>
+        
+        <div class="admin-layout">
+            {% if all_posts %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>店舗名</th>
+                            <th>投稿ユーザー</th>
+                            <th>混雑度</th>
+                            <th>コメント</th>
+                            <th>投稿日時</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in all_posts %}
+                        <tr>
+                            <td>{{ post.id }}</td>
+                            <td>{{ post.shop_name }}</td>
+                            <td>
+                                <a href="{{ url_for('main.admin_user_detail', user_id=post.user_id) }}">{{ post.user.username }}</a>
+                            </td>
+                            <td>
+                                <span class="crowd-level-{{ post.crowd_level }}">{{ post.crowd_level }}</span>
+                            </td>
+                            <td class="post-comment">{{ post.comment | default('コメントなし', true) | truncate(50) }}</td>
+                            <td>{{ post.timestamp.strftime('%Y/%m/%d %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-data">現在、投稿データはありません。</p>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+{% endblock %}

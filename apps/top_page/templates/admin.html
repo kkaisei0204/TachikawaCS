@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ユーザー管理 | 立川混雑シェア</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+  <style>
+    body { background-color: #f4f7f6; margin: 0; padding-top: 56px; padding-bottom: 56px; min-height: 100vh; font-family: "Noto Sans JP", sans-serif; }
+    
+    /* ヘッダー */
+    header {
+      background-color: #3a3f48;
+      color: #ffffff;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 56px;
+      z-index: 1100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .app_name h1 { margin: 0; font-size: 16px; font-weight: bold; color: #ffffff; }
+
+    /* ハンバーガーメニュー（中央配置） */
+    .mobile-menu-toggle {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .mobile-menu-toggle span { display: block; width: 24px; height: 2px; background-color: #ffffff; margin: 3px 0; transition: all 0.3s; border-radius: 2px; }
+    .mobile-menu-toggle.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .mobile-menu-toggle.active span:nth-child(2) { opacity: 0; }
+    .mobile-menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+    /* フッター */
+    footer {
+      background-color: #3a3f48;
+      color: #ffffff;
+      position: fixed;
+      bottom: 0; left: 0; width: 100%; height: 50px;
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: bold;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+    }
+
+    /* コンテンツ */
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
+    .admin-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .filter-wrapper { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    .form-control { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; flex: 1; min-width: 150px; }
+    .btn-apply { padding: 8px 16px; background: #2f2f33; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+    .btn-apply:hover { background: #1a1a1d; }
+    .table-responsive { overflow-x: auto; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .admin-table th { background: #f8f9fa; padding: 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #dee2e6; }
+    .admin-table td { padding: 10px; border-bottom: 1px solid #dee2e6; }
+    .admin-table tbody tr:hover { background: #f8f9fa; }
+    .btn-detail { background: #2f2f33; color: white; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 11px; }
+
+    @media (max-width: 768px) { .filter-wrapper { flex-direction: column; } .form-control, .btn-apply { width: 100%; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="app_name"><h1>立川混雑シェア</h1></div>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="menu-outer01">
+      <ul class="sample_menu_list01">
+        <li><a href="{{ url_for('main.index') }}">トップ</a></li>
+        <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
+        <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
+        <li><a href="{{ url_for('main.admin_panel') }}">ユーザー管理</a></li>
+        <li><a href="{{ url_for('main.admin_dashboard') }}">ダッシュボード</a></li>
+        <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+      </ul>        
+    </div>
+  </header>
+  <div class="menu-overlay" id="menuOverlay"></div>
+
+  <div class="container">
+    <div class="admin-card">
+      <h2 style="font-size: 16px; margin: 0 0 15px 0; border-left: 4px solid #2f2f33; padding-left: 8px;">登録ユーザー一覧</h2>
+
+      <form method="GET" action="{{ url_for('main.admin_panel') }}" class="filter-wrapper">
+        <input type="text" name="q" value="{{ q or '' }}" placeholder="ユーザー名検索" class="form-control">
+        <select name="sort" class="form-control">
+          <option value="id_desc" {% if sort == "id_desc" %}selected{% endif %}>ID (新)</option>
+          <option value="name_asc" {% if sort == "name_asc" %}selected{% endif %}>名前 (A-Z)</option>
+        </select>
+        <button type="submit" class="btn-apply">適用</button>
+      </form>
+
+      <div class="table-responsive">
+        {% if users %}
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>ユーザー名</th>
+                <th>登録日</th>
+                <th>投稿数</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+                <tr>
+                  <td>{{ user.id }}</td>
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</td>
+                  <td>{{ user.post_count or 0 }}</td>
+                  <td>
+                    <a href="{{ url_for('main.admin_user_detail', user_id=user.id) }}" class="btn-detail">詳細</a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p style="text-align: center; color: #999; padding: 20px;">該当するユーザーがいません</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 立川混雑シェアマップ</p>
+  </footer>
+
+  <script>
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    const menuOuter = document.querySelector('.menu-outer01');
+    const menuOverlay = document.getElementById('menuOverlay');
+
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        menuToggle.classList.toggle('active');
+        menuOuter.classList.toggle('active');
+        menuOverlay.classList.toggle('active');
+      });
+
+      menuOverlay.addEventListener('click', () => {
+        menuToggle.classList.remove('active');
+        menuOuter.classList.remove('active');
+        menuOverlay.classList.remove('active');
+      });
+
+      menuOuter.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          menuToggle.classList.remove('active');
+          menuOuter.classList.remove('active');
+          menuOverlay.classList.remove('active');
+        });
+      });
+    }
+  </script>
+</body>
+</html>

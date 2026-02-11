@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>店舗別ダッシュボード</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <header class="admin-header">
+    <h1>店舗別ダッシュボード</h1>
+  </header>
+
+  <div class="container dashboard-container">
+
+    <div class="admin-nav">
+      <span class="admin-nav__label">現在地: {{ data.shop_name }}</span>
+      <a class="admin-nav__link" href="{{ url_for('main.admin_dashboard') }}">全体ダッシュボード</a>
+      <a class="admin-nav__link" href="{{ url_for('main.admin_panel') }}">ユーザー管理</a>
+      <a class="admin-nav__link" href="{{ url_for('main.admin_reservations_list') }}">予約管理</a>
+      <a class="admin-nav__link" href="{{ url_for('main.index') }}">トップへ戻る</a>
+    </div>
+
+    <!-- 期間切替 -->
+    <section class="panel">
+      <h2>集計期間</h2>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="admin-nav__link" href="?days=7">7日</a>
+        <a class="admin-nav__link" href="?days=30">30日</a>
+        <a class="admin-nav__link" href="?days=90">90日</a>
+        <a class="admin-nav__link" href="?days=all">全期間</a>
+        <span style="margin-left:8px; opacity:.8;">
+          現在：{% if data.window.days == "all" %}全期間{% else %}{{ data.window.days }}日{% endif %}
+        </span>
+      </div>
+    </section>
+
+    <!-- アラート（店舗単体） -->
+    <section class="panel">
+      <h2>アラート（直近1時間の急増）</h2>
+      {% if data.anomaly %}
+        <div class="anomaly-box">
+          <div class="anomaly-item warn">
+            <strong>{{ data.shop_name }}</strong>：直近1時間 {{ data.anomaly.count_1h }}件（平均 {{ data.anomaly.avg_1h }}件/時）
+          </div>
+        </div>
+      {% else %}
+        <div class="anomaly-box">
+          <div class="anomaly-item ok">現在、急増アラートはありません。</div>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- KPI -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">総投稿数（全期間）</div>
+        <div class="kpi-value">{{ data.kpi.posts_total }}</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">投稿数（選択期間）</div>
+        <div class="kpi-value">{{ data.kpi.posts_window }}</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">AI予測一致率（簡易）</div>
+        <div class="kpi-value">
+          {% if data.kpi.ai_accuracy is none %}データ不足{% else %}{{ data.kpi.ai_accuracy }}%{% endif %}
+        </div>
+        <div class="kpi-sub">※過去90日学習 → 選択期間で評価</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">予約数（選択期間）</div>
+        <div class="kpi-value">{{ data.kpi.reservations_window }}</div>
+        <div class="kpi-sub">※店舗に紐付いている場合</div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+
+      <div class="panel">
+        <h2>投稿推移（日別）</h2>
+        <div class="chart-container">
+          <canvas id="chartPostsLine"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>混雑レベル割合</h2>
+        <div class="chart-container">
+          <canvas id="chartCrowdDonut"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>曜日別 投稿数</h2>
+        <div class="chart-container">
+          <canvas id="chartWeekday"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>時間帯別 投稿数（9〜21時）</h2>
+        <div class="chart-container">
+          <canvas id="chartHour"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>予約推移（日別）</h2>
+        <div class="chart-container">
+          <canvas id="chartResLine"></canvas>
+        </div>
+        <p class="note">※予約が店舗に紐付いていない場合、0件になります。</p>
+      </div>
+
+      <div class="panel">
+        <h2>予約の時間帯分布（9〜21時）</h2>
+        <div class="chart-container">
+          <canvas id="chartResHour"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>投稿者ランキング（上位5）</h2>
+        <div class="table-wrap">
+          <table class="mini-table">
+            <thead>
+              <tr><th>ユーザー</th><th>投稿数</th></tr>
+            </thead>
+            <tbody>
+              {% if data.top_users %}
+                {% for u in data.top_users %}
+                  <tr><td>{{ u.user }}</td><td>{{ u.count }}</td></tr>
+                {% endfor %}
+              {% else %}
+                <tr><td colspan="2">データ不足</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>最新投稿（最大10件）</h2>
+        <div class="table-wrap">
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>時刻</th>
+                <th>ユーザー</th>
+                <th>混雑</th>
+                <th>コメント</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if data.latest_posts %}
+                {% for p in data.latest_posts %}
+                  <tr>
+                    <td>{{ p.time }}</td>
+                    <td>{{ p.user }}</td>
+                    <td>{{ p.crowd }}</td>
+                    <td>{{ p.comment }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr><td colspan="4">投稿がありません</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <script>
+    const data = {{ data | tojson }};
+
+    function mkChart(id, cfg) {
+      const ctx = document.getElementById(id).getContext('2d');
+      return new Chart(ctx, cfg);
+    }
+
+    mkChart('chartPostsLine', {
+      type: 'line',
+      data: {
+        labels: data.posts_line.labels,
+        datasets: [{
+          label: '投稿数',
+          data: data.posts_line.data,
+          tension: 0.25,
+          fill: false
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    mkChart('chartCrowdDonut', {
+      type: 'doughnut',
+      data: {
+        labels: data.crowd_donut.labels,
+        datasets: [{
+          label: '件数',
+          data: data.crowd_donut.data
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    mkChart('chartWeekday', {
+      type: 'bar',
+      data: {
+        labels: data.posts_by_weekday.labels,
+        datasets: [{
+          label: '投稿数',
+          data: data.posts_by_weekday.data,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    mkChart('chartHour', {
+      type: 'bar',
+      data: {
+        labels: data.posts_by_hour.labels,
+        datasets: [{
+          label: '投稿数',
+          data: data.posts_by_hour.data,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    mkChart('chartResLine', {
+      type: 'line',
+      data: {
+        labels: data.reservations_line.labels,
+        datasets: [{
+          label: '予約数',
+          data: data.reservations_line.data,
+          tension: 0.25,
+          fill: false
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    mkChart('chartResHour', {
+      type: 'bar',
+      data: {
+        labels: data.reservations_by_hour.labels,
+        datasets: [{
+          label: '予約数',
+          data: data.reservations_by_hour.data,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  </script>
+
+</body>
+</html>
