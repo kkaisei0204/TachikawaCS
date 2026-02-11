@@ -1,15 +1,26 @@
+﻿# Python
 __pycache__/
-*.py[cod]
 *.pyc
 venv/
 env/
+
+# 環境変数
 .env
-*.db
-*.sqlite
-*.sqlite3
+
+# ログ
 *.log
+
+# IDE
 .vscode/
 .idea/
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Flask
 instance/
+
+# バックアップ
+*.backup
+*.bak
