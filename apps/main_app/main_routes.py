@@ -100,7 +100,7 @@ def login():
 def logout():
     """ログアウト処理"""
     logout_user()
-    flash("ログアウトしました", "success")
+    flash("ログアウトしました", "error")
     return redirect(url_for("main.index"))
 
 # 新規登録

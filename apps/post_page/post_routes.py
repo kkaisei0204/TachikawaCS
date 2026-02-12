@@ -167,6 +167,7 @@ def submit_post():
     print(f"[投稿完了] {user_name} さんが投稿 → {shop_name}（{crowd_level}）")
 
     # JSONで成功レスポンスを返す（JavaScript側でリダイレクトする）
+    flash("投稿しました", "success")
     return jsonify({"success": True, "redirect": url_for('topics.topics_page')})
 
 # 投稿編集ページ（表示）
