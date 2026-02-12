@@ -2,8 +2,9 @@ import sqlite3
 import os
 from datetime import datetime, timedelta
 
-# データベースファイルのパス
-DB_PATH = "post_data.db"
+# プロジェクトのルートディレクトリを取得
+basedir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+DB_PATH = os.path.join(basedir, "post_data.db")
 
 def init_db():
     """データベースとテーブルを初期化"""
