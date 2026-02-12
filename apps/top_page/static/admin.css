@@ -45,34 +45,35 @@ header {
 }
 
 /* ========================================
+   🍔 ハンバーガーメニュー 
+   ======================================== */
+/* ========================================
    🍔 ハンバーガーメニュー (サイズ修正)
    ======================================== */
 .mobile-menu-toggle {
-  display: none; /* PCでは非表示 */
+  display: none;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 10px;
   flex-direction: column;
-  gap: 4px; /* 線の間隔を狭く */
+  gap: 4px;
   z-index: 1002;
-  width: 44px; /* タップ領域の固定 */
+  width: 44px;
   height: 44px;
-  justify-content: center;
-  align-items: center;
 }
 
 @media (max-width: 768px) {
   .mobile-menu-toggle {
-    display: flex; /* スマホで表示 */
+    display: flex;
   }
 }
 
 /* 線のスタイル（トップページと同じサイズに） */
 .mobile-menu-toggle span {
   display: block;
-  width: 25px;  /* 横幅 */
-  height: 3px;  /* 太さ */
+  width: 25px;  /* ← これが正しい */
+  height: 3px;  /* ← これが正しい */
   background-color: white;
   transition: all 0.3s ease;
   border-radius: 2px;
@@ -88,7 +89,6 @@ header {
 .mobile-menu-toggle.active span:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
 }
-
 /* ========================================
    📌 ナビゲーションメニュー (ドロワー)
    ======================================== */
