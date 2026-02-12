@@ -2880,3 +2880,67 @@ body {
     min-height: 44px;
   }
 }
+
+/* ========================================
+   フラッシュメッセージ（統一デザイン）
+   ======================================== */
+.flash-messages {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 350px;
+}
+
+.flash {
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.4s ease-out, slideOutRight 0.5s ease-in 3s forwards;
+}
+
+/* 成功メッセージ（緑） */
+.flash.success {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* エラーメッセージ（赤） */
+.flash.error,
+.flash.danger {
+  background-color: #f44336;
+  color: white;
+}
+
+/* 情報メッセージ（青） */
+.flash.info {
+  background-color: #2196F3;
+  color: white;
+}
+
+/* スライドインアニメーション */
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* スライドアウトアニメーション（右へ） */
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
