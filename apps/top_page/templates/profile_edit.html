@@ -190,7 +190,7 @@
       padding: 12px;
       border: 2px solid #ddd;
       border-radius: 8px;
-      font-size: 14px;
+      font-size: 16px;
       min-height: 120px;
       resize: vertical;
       font-family: inherit;
@@ -259,19 +259,148 @@
       margin-top: 5px;
     }
 
-    /* レスポンシブ */
-    @media (max-width: 600px) {
+    /* iPad mini (768px - 1024px) */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .profile-container {
+        max-width: 750px;
+        margin: 80px auto;
+        padding: 30px;
+      }
+
+      .profile-header {
+        padding: 30px;
+      }
+
+      .profile-title {
+        font-size: 28px;
+      }
+
+      .profile-content {
+        padding: 40px;
+      }
+
+      .icon-preview,
+      .new-icon-preview {
+        width: 150px;
+        height: 150px;
+      }
+
+      .icon-section,
+      .banner-section {
+        padding: 30px;
+      }
+
+      .form-textarea {
+        padding: 14px;
+        min-height: 140px;
+      }
+
+      .submit-button,
+      .cancel-button {
+        padding: 16px;
+        font-size: 18px;
+      }
+
+      .upload-button {
+        padding: 14px 28px;
+        font-size: 16px;
+      }
+    }
+
+    /* iPhone (375px - 767px) */
+    @media (max-width: 767px) {
       .profile-container {
         margin: 20px auto;
-        padding: 10px;
+        padding: 15px;
+      }
+
+      .profile-header {
+        padding: 20px;
+      }
+
+      .profile-title {
+        font-size: 22px;
       }
 
       .profile-content {
         padding: 20px;
       }
 
+      .icon-section,
+      .banner-section {
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .icon-preview,
+      .new-icon-preview {
+        width: 100px;
+        height: 100px;
+      }
+
       .form-actions {
         flex-direction: column;
+      }
+
+      .banner-unlocked-title,
+      .banner-locked-title {
+        font-size: 15px;
+      }
+
+      .banner-unlocked-text,
+      .banner-locked-text {
+        font-size: 13px;
+      }
+    }
+
+    /* iPhone SE (375px) */
+    @media (max-width: 375px) {
+      .profile-container {
+        padding: 10px;
+        margin: 15px auto;
+      }
+
+      .profile-header {
+        padding: 18px;
+      }
+
+      .profile-title {
+        font-size: 20px;
+      }
+
+      .profile-content {
+        padding: 15px;
+      }
+
+      .icon-section,
+      .banner-section {
+        padding: 15px;
+      }
+
+      .icon-preview,
+      .new-icon-preview {
+        width: 90px;
+        height: 90px;
+      }
+
+      .upload-button {
+        padding: 10px 20px;
+        font-size: 13px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-textarea {
+        padding: 10px;
+        min-height: 100px;
+      }
+
+      .submit-button,
+      .cancel-button {
+        padding: 12px;
+        font-size: 15px;
       }
     }
   </style>
