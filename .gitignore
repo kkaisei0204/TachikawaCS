@@ -1,26 +1,226 @@
-﻿# Python
+# ============================================
+# systemsフォルダの完 Eなファイル構造
+# ============================================
+
+systems/
+├── .env                          # 環墁E  数 E Eit除外！E
+├── .gitignore                    # こ Eファイル
+├── add_banner_column.py
+├── Diagnosebanner.py
+├── fix_banner_now.py
+├── grant_points.py
+├── init_database.py
+├── super_grant_points.py
+├── memo.db                       # チE Eタベ Eス E Eit除外推奨だが、E  発用なら含めてもOK E E
+├── post_data.db                  # チE Eタベ Eス E Eit除外推奨だが、E  発用なら含めてもOK E E
+━E
+├── instance/                     # Flaskのインスタンスフォルダ E Eit除外！E
+━E
+└── apps/
+    ├── __init__.py
+    ├── config.py                 # 設定ファイル E コミットする！E
+    ├── EMERGENCY_FIX.py
+    ├── fix_all_mobile.py
+    ├── shop_details.py
+    ├── update_points.py
+    ━E
+    ├── __pycache__/              # Python キャチE  ュ E Eit除外！E
+    ━E  ├── config.cpython-310.pyc
+    ━E  ├── config.cpython-312.pyc
+    ━E  ├── shop_details.cpython-310.pyc
+    ━E  ├── shop_details.cpython-312.pyc
+    ━E  ├── __init__.cpython-310.pyc
+    ━E  └── __init__.cpython-312.pyc
+    ━E
+    ├── main_app/
+    ━E  ├── __init__.py
+    ━E  ├── admin_guard.py
+    ━E  ├── app.py                # メインアプリ
+    ━E  ├── main_routes.py
+    ━E  ├── models.py
+    ━E  ├── uploads/
+    ━E  ━E  └── default.png
+    ━E  └── __pycache__/          # Python キャチE  ュ E Eit除外！E
+    ━E
+    ├── post_page/
+    ━E  ├── __init__.py
+    ━E  ├── post_db.py
+    ━E  ├── post_routes.py
+    ━E  ├── static/               # 空フォルダだが存在
+    ━E  ├── templates/
+    ━E  ━E  ├── post.html
+    ━E  ━E  ├── post.html.backup
+    ━E  ━E  ├── post.html.bak
+    ━E  ━E  └── post_edit.html
+    ━E  └── __pycache__/
+    ━E
+    ├── prediction/
+    ━E  ├── __init__.py
+    ━E  ├── prediction.py
+    ━E  └── __pycache__/
+    ━E
+    ├── reservation_page/
+    ━E  ├── __init__.py
+    ━E  ├── reservation_routes.py
+    ━E  ├── static/               # 空フォルダだが存在
+    ━E  ├── templates/
+    ━E  ━E  ├── base.html
+    ━E  ━E  ├── reservations.html
+    ━E  ━E  ├── reserve.html
+    ━E  ━E  └── thanks.html
+    ━E  └── __pycache__/
+    ━E
+    ├── restaurant_page/
+    ━E  ├── restaurant_routes.py  # __init__.py なぁE
+    ━E  ├── templates/
+    ━E  ━E  └── restaurant.html
+    ━E  └── __pycache__/
+    ━E
+    ├── topics_page/
+    ━E  ├── __init__.py
+    ━E  ├── topics_routes.py
+    ━E  ├── static/               # 空フォルダだが存在
+    ━E  ├── templates/
+    ━E  ━E  ├── topics.html
+    ━E  ━E  ├── topics.html.backup
+    ━E  ━E  └── topics.html.bak
+    ━E  └── __pycache__/
+    ━E
+    └── top_page/
+        ├── __init__.py
+        ├── static/
+        ━E  ├── admin.css
+        ━E  ├── manifest.json
+        ━E  ├── mobileutils.js
+        ━E  ├── reservation_style.css
+        ━E  ├── style.css
+        ━E  ├── images/           # 空フォルダだが存在
+        ━E  └── uploads/
+        ━E      ├── banners/      # 空フォルダだが存在
+        ━E      └── icons/
+        ━E          ├── default.png
+        ━E          ├── test_icon.png
+        ━E          ├── 23e694fb97664b97865a80710404ff5f.png
+        ━E          ├── 35514571e46b441caa4749c587094f8b.png
+        ━E          ├── 4f48bb9be7ce45359199019fd1f50025.png
+        ━E          ├── 54871fe7e9e549e4a9513d9fea9ada8e.png
+        ━E          ├── 630c9154c4bd4b8aa6ffa51b55077f3b.png
+        ━E          ├── 876c0f5c65364cdd9e20c33fade40809.png
+        ━E          ├── 88bf3494392d46b1b2e1dcca9d7540fc.jpeg
+        ━E          ├── a15adb2388c6479e851d7be7246b8860.jpg
+        ━E          ├── bccfebd1e8cb414299d8cbc80ad4c16c.jpg
+        ━E          ├── ceca437d1a7a4c9e9a6f901a00b28e27.jpg
+        ━E          ├── d847619b49c643829758c772e9a34731.jpg
+        ━E          ├── da59a059f0fe4ce4823d54f3a556d319.jpg
+        ━E          ├── df5b0cd587224ad1bbde34729e264471.png
+        ━E          └── ed4507aecdb1460a91e934e1a5919c38.png
+        ├── templates/
+        ━E  ├── __init__.py
+        ━E  ├── admin.html
+        ━E  ├── admin.html.backup
+        ━E  ├── admin.html.bak
+        ━E  ├── admin_dashboard.html
+        ━E  ├── admin_dashboard.html.backup
+        ━E  ├── admin_dashboard.html.bak
+        ━E  ├── admin_posts.html
+        ━E  ├── admin_shop_dashboard.html
+        ━E  ├── admin_user_detail.html
+        ━E  ├── ai_prediction.html
+        ━E  ├── index.html
+        ━E  ├── index.html.backup
+        ━E  ├── index.html.bak
+        ━E  ├── login.html
+        ━E  ├── oharatei.html
+        ━E  ├── profile_edit.html
+        ━E  ├── register.html
+        ━E  ├── shops_list.html
+        ━E  ├── user_page.html
+        ━E  ├── user_page.html.backup
+        ━E  └── user_page.html.bak
+        └── __pycache__/
+
+
+# ============================================
+# 正しい .gitignore ファイル
+# ============================================
+
+# Python バイトコーチE
 __pycache__/
+*.py[cod]
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+# 仮想環墁E
 venv/
 env/
+ENV/
+.venv/
 
-# 環境変数
+# 環墁E  数ファイル E 機寁E  報 E E
 .env
+.flaskenv
 
-# ログ
+# チE Eタベ Eス E 開発環墁E  は含めてもOKだが、本番DBは除外！E
+# 開発用にコミットしたい場合 EコメントアウチE
+
+# ログファイル
 *.log
 
-# IDE
+# IDE設宁E
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
 
-# OS
+# OS固朁E
 .DS_Store
 Thumbs.db
+desktop.ini
+*.bak
 
 # Flask
 instance/
+.webassets-cache
 
-# バックアップ
+# キャチE  ュ
+.cache/
+.pytest_cache/
+
+# ビルド E果物
+dist/
+build/
+*.egg-info/
+*.egg
+
+# カバレチE  
+htmlcov/
+.coverage
+.coverage.*
+.tox/
+
+# Node E もし使ってぁE  ば E E
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# バックアチE Eファイル
 *.backup
 *.bak
+*~
+
+# アチE Eロードされた画像（容量が大きい場合 Eみ除外！E
+# 開発環墁E  共有したい場合 EコメントアウチE
+# apps/top_page/static/uploads/icons/*.png
+# apps/top_page/static/uploads/icons/*.jpg
+# apps/top_page/static/uploads/icons/*.jpeg
+# apps/main_app/uploads/*
+
+# Git関連
+.git/
+.gitattributes
