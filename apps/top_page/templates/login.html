@@ -1,379 +1,333 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ログイン - 立川混雑シェア</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン・新規登録 - 立川混雑シェア</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
-    /* スマホ対応：基本設定 */
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      overflow-x: hidden !important;
-      width: 100% !important;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { margin: 0 !important; padding: 0 !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Hiragino Sans", sans-serif; }
+
+    .auth-container {
+      max-width: 480px;
+      margin: 60px auto;
+      padding: 20px;
     }
-    
-    /* レイアウト */
-    .auth-wrap {
-      max-width: 720px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 28px 16px;
-    }
-    
+
     .auth-card {
-      background: #fff;
-      border: 1px solid rgba(0,0,0,.08);
-      border-radius: 18px;
-      box-shadow: 0 10px 26px rgba(0,0,0,.06);
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       overflow: hidden;
-      width: 100%;
-    }
-    
-    .auth-head {
-      padding: 20px;
-      border-bottom: 1px solid rgba(0,0,0,.06);
-    }
-    
-    .auth-title {
-      margin: 0;
-      font-size: 22px;
-    }
-    
-    .auth-body {
-      padding: 20px;
     }
 
-    /* フォーム */
-    .field {
-      display: grid;
-      gap: 6px;
-      margin-bottom: 16px;
-    }
-    
-    .label {
-      font-size: 13px;
-      font-weight: 600;
-      color: rgba(0,0,0,.75);
+    /* タブ */
+    .auth-tabs {
+      display: flex;
+      border-bottom: 2px solid #e0e0e0;
     }
 
-    .input-wrap {
-      position: relative;
-    }
-    
-    .input {
-      width: 100%;
-      padding: 11px 42px 11px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,.18);
-      outline: none;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-    
-    .input:focus {
-      border-color: #333;
-    }
-
-    /* エラー時 */
-    .input.error {
-      border-color: #c62828;
-      background: #fff6f6;
-    }
-    
-    .error-text {
-      font-size: 12px;
-      color: #c62828;
-    }
-
-    /* パスワード表示切替 */
-    .toggle-password {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
+    .auth-tab {
+      flex: 1;
+      padding: 16px;
+      text-align: center;
+      background: #f5f5f5;
       border: none;
       cursor: pointer;
       font-size: 16px;
-      opacity: .6;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.3s;
+      font-family: inherit;
     }
-    
-    .toggle-password:hover {
-      opacity: 1;
+
+    .auth-tab.active {
+      background: white;
+      color: #000;
+      border-bottom: 3px solid #000;
+    }
+
+    /* コンテンツ */
+    .auth-content {
+      padding: 30px;
+    }
+
+    .auth-form {
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
+    }
+
+    /* フォームグループ */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+      font-family: inherit;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #000;
+    }
+
+    .form-textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .form-textarea:focus {
+      outline: none;
+      border-color: #000;
+    }
+
+    /* 画像アップロード */
+    .image-upload-container {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .image-preview {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 3px solid #e0e0e0;
+      margin: 0 auto 15px;
+      overflow: hidden;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-preview-placeholder {
+      color: #999;
+      font-size: 14px;
+    }
+
+    .upload-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #000;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+      font-family: inherit;
+    }
+
+    .upload-button:hover {
+      background: #333;
+    }
+
+    .file-input {
+      display: none;
     }
 
     /* ボタン */
-    .btn-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-    
-    .btn {
-      padding: 10px 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,.14);
-      background: #111;
-      color: #fff;
+    .submit-button {
+      width: 100%;
+      padding: 14px;
+      background: #000;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
-      font-size: 14px;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
-    }
-    
-    .btn--ghost {
-      background: transparent;
-      color: #111;
+      transition: background 0.3s;
+      font-family: inherit;
     }
 
-    /* フラッシュ */
-    .flash-wrap {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    
-    .flash {
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,.14);
-      background: rgba(0,0,0,.03);
-      font-size: 14px;
-    }
-    
-    .flash--error {
-      border-color: rgba(198,40,40,.3);
-      background: rgba(198,40,40,.08);
-    }
-    
-    .flash--success {
-      border-color: rgba(46,125,50,.3);
-      background: rgba(46,125,50,.08);
+    .submit-button:hover {
+      background: #333;
     }
 
-    .muted {
+    .submit-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* ヘルプテキスト */
+    .help-text {
       font-size: 12px;
-      color: rgba(0,0,0,.6);
-      line-height: 1.6;
+      color: #666;
+      margin-top: 5px;
     }
-    
-    /* スマホ対応 */
-    @media (max-width: 768px) {
-      .auth-wrap {
-        padding: 20px 12px;
+
+    /* レスポンシブ */
+    @media (max-width: 600px) {
+      .auth-container {
+        margin: 20px auto;
+        padding: 10px;
       }
-      
-      .auth-card {
-        border-radius: 14px;
-      }
-      
-      .auth-head {
-        padding: 16px;
-      }
-      
-      .auth-title {
-        font-size: 20px;
-      }
-      
-      .auth-body {
-        padding: 16px;
-      }
-      
-      .input {
-        font-size: 16px; /* iOS Safari拡大防止 */
-        padding: 12px 42px 12px 14px;
-      }
-      
-      .btn {
-        font-size: 16px; /* iOS Safari拡大防止 */
-        padding: 12px 18px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .auth-wrap {
-        padding: 16px 10px;
-      }
-      
-      .auth-head {
-        padding: 14px;
-      }
-      
-      .auth-body {
-        padding: 14px;
-      }
-      
-      .btn-row {
-        flex-direction: column;
-      }
-      
-      .btn {
-        width: 100%;
+
+      .auth-content {
+        padding: 20px;
       }
     }
   </style>
 </head>
 <body>
-
-  <!-- ヘッダー（ナビゲーションバー + ハンバーガーメニュー） -->
   <header>
-    <div class="app_name">
-      <h1>立川混雑シェア</h1>
-    </div>
+    <div class="app_name"><h1>立川混雑シェア</h1></div>
     <button class="mobile-menu-toggle" id="mobileMenuToggle">
-      <span></span>
-      <span></span>
-      <span></span>
+      <span></span><span></span><span></span>
     </button>
     <div class="menu-outer01">
       <ul class="sample_menu_list01">
         <li><a href="{{ url_for('main.index') }}">トップ</a></li>
         <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
         <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
-        {% if current_user.is_authenticated %}
-          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
-          <li class="user-info">
-            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
-              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
-              {{ current_user.username }}さん
-            </a>
-          </li>
-          {% if current_user.is_admin %}
-            <li><a href="{{ url_for('main.admin_panel') }}">管理者パネル</a></li>
-          {% endif %}
-          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
-        {% else %}
-          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
-          <li><a href="{{ url_for('main.register') }}">新規登録</a></li>
-        {% endif %}
-      </ul>        
+      </ul>
     </div>
   </header>
   <div class="menu-overlay" id="menuOverlay"></div>
 
-  <div class="auth-wrap">
-    <div class="auth-card">
+  <!-- フラッシュメッセージ -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
 
-      <div class="auth-head">
-        <h1 class="auth-title">ログイン</h1>
+  <div class="auth-container">
+    <div class="auth-card">
+      <!-- タブ -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">ログイン</button>
+        <button class="auth-tab" onclick="switchTab('register')">新規登録</button>
       </div>
 
-      <div class="auth-body">
-
-        {% set has_error = false %}
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="flash-wrap">
-              {% for category, message in messages %}
-                {% if category == "error" %}
-                  {% set has_error = true %}
-                {% endif %}
-                <div class="flash flash--{{ category }}">{{ message }}</div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-
-        <form method="POST" action="{{ url_for('main.login') }}">
-
-          <div class="field">
-            <label class="label" for="username">ユーザー名</label>
-            <input
-              class="input {% if has_error %}error{% endif %}"
-              id="username"
-              name="username"
-              type="text"
-              required
-            >
-            {% if has_error %}
-              <div class="error-text">ユーザー名を確認してください</div>
-            {% endif %}
+      <!-- コンテンツ -->
+      <div class="auth-content">
+        <!-- ログインフォーム -->
+        <form class="auth-form active" id="loginForm" method="POST" action="{{ url_for('main.login') }}">
+          <div class="form-group">
+            <label class="form-label">ユーザーネーム</label>
+            <input type="text" name="username" class="form-input" required autofocus>
           </div>
 
-          <div class="field">
-            <label class="label" for="password">パスワード</label>
-
-            <div class="input-wrap">
-              <input
-                class="input {% if has_error %}error{% endif %}"
-                id="password"
-                name="password"
-                type="password"
-                required
-              >
-              <button
-                type="button"
-                class="toggle-password"
-                aria-label="パスワード表示切替"
-                onclick="togglePassword()"
-              >
-                ●
-              </button>
-            </div>
-
-            {% if has_error %}
-              <div class="error-text">パスワードを確認してください</div>
-            {% endif %}
+          <div class="form-group">
+            <label class="form-label">パスワード</label>
+            <input type="password" name="password" class="form-input" required>
           </div>
 
-          <div class="btn-row">
-            <button class="btn" type="submit">ログイン</button>
-            <a class="btn btn--ghost" href="{{ url_for('main.index') }}">戻る</a>
-          </div>
-
-          <div class="muted" style="margin-top:14px;">
-            アカウントをお持ちでない方は
-            <a href="{{ url_for('main.register') }}">新規登録</a>
-          </div>
+          <button type="submit" class="submit-button">ログインする</button>
         </form>
 
+        <!-- 新規登録フォーム -->
+        <form class="auth-form" id="registerForm" method="POST" action="{{ url_for('main.register') }}" enctype="multipart/form-data">
+          <!-- 画像アップロード -->
+          <div class="image-upload-container">
+            <div class="image-preview" id="imagePreview">
+              <span class="image-preview-placeholder">画像を選択</span>
+            </div>
+            <label class="upload-button" for="iconInput">画像を選択</label>
+            <input type="file" id="iconInput" name="icon" class="file-input" accept="image/*" required>
+            <p class="help-text">プロフィール画像を選択してください</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ユーザーネーム</label>
+            <input type="text" name="username" class="form-input" required>
+            <p class="help-text">半角英数字・アンダースコアのみ使用可能</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">パスワード</label>
+            <input type="password" name="password" class="form-input" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">自己紹介（任意）</label>
+            <textarea name="bio" class="form-textarea" placeholder="自己紹介を入力してください"></textarea>
+          </div>
+
+          <button type="submit" class="submit-button">新規登録する</button>
+        </form>
       </div>
     </div>
   </div>
 
-  <footer>
-    <p>© 2025 立川混雑シェアマップ</p>
-  </footer>
-
   <script>
-    function togglePassword() {
-      const input = document.getElementById("password");
-      input.type = (input.type === "password") ? "text" : "password";
-    }
-    
-    // ハンバーガーメニュー
-    const menuToggle = document.getElementById('mobileMenuToggle');
-    const menuOuter = document.querySelector('.menu-outer01');
-    const menuOverlay = document.getElementById('menuOverlay');
-    
-    if (menuToggle && menuOuter && menuOverlay) {
-      menuToggle.addEventListener('click', function() {
-        this.classList.toggle('active');
-        menuOuter.classList.toggle('active');
-        menuOverlay.classList.toggle('active');
-      });
-      
-      menuOverlay.addEventListener('click', function() {
-        menuToggle.classList.remove('active');
-        menuOuter.classList.remove('active');
-        this.classList.remove('active');
-      });
-      
-      const menuLinks = menuOuter.querySelectorAll('a');
-      menuLinks.forEach(link => {
-        link.addEventListener('click', function() {
-          menuToggle.classList.remove('active');
-          menuOuter.classList.remove('active');
-          menuOverlay.classList.remove('active');
-        });
-      });
-    }
-  </script>
+    // タブ切り替え
+    function switchTab(tab) {
+      const tabs = document.querySelectorAll('.auth-tab');
+      const forms = document.querySelectorAll('.auth-form');
 
+      tabs.forEach(t => t.classList.remove('active'));
+      forms.forEach(f => f.classList.remove('active'));
+
+      if (tab === 'login') {
+        tabs[0].classList.add('active');
+        forms[0].classList.add('active');
+      } else {
+        tabs[1].classList.add('active');
+        forms[1].classList.add('active');
+      }
+    }
+
+    // 画像プレビュー
+    document.getElementById('iconInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const preview = document.getElementById('imagePreview');
+          preview.innerHTML = `<img src="${event.target.result}" alt="プレビュー">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // モバイルメニュー
+    document.getElementById('mobileMenuToggle')?.addEventListener('click', function() {
+      this.classList.toggle('active');
+      document.querySelector('.menu-outer01').classList.toggle('open');
+      document.getElementById('menuOverlay').classList.toggle('active');
+    });
+
+    document.getElementById('menuOverlay')?.addEventListener('click', function() {
+      document.getElementById('mobileMenuToggle').classList.remove('active');
+      document.querySelector('.menu-outer01').classList.remove('open');
+      this.classList.remove('active');
+    });
+  </script>
 </body>
 </html>
