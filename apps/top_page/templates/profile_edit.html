@@ -540,13 +540,13 @@
     // モバイルメニュー
     document.getElementById('mobileMenuToggle')?.addEventListener('click', function() {
       this.classList.toggle('active');
-      document.querySelector('.menu-outer01').classList.toggle('open');
+      document.querySelector('.menu-outer01').classList.toggle('active');
       document.getElementById('menuOverlay').classList.toggle('active');
     });
 
     document.getElementById('menuOverlay')?.addEventListener('click', function() {
       document.getElementById('mobileMenuToggle').classList.remove('active');
-      document.querySelector('.menu-outer01').classList.remove('open');
+      document.querySelector('.menu-outer01').classList.remove('activate');
       this.classList.remove('active');
     });
   </script>
