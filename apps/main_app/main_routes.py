@@ -185,7 +185,7 @@ def register():
             # 自動ログイン
             login_user(new_user)
             flash("登録が完了しました", "success")
-            return redirect(url_for('main.profile_edit'))
+            return redirect(url_for('main.index'))
         # 例外処理
         except Exception as e:
             print(f"画像処理エラー: {e}")
@@ -421,9 +421,40 @@ def profile_edit():
 def update_profile():
     """プロフィール編集（保存）"""
     from PIL import Image
+    from apps.main_app.models import User
     import uuid
+    import sqlite3
+    
     # フォームデータ取得
+    new_username = request.form.get("username", "").strip()
     bio = request.form.get("bio", "")
+    
+    # ユーザーネーム変更処理
+    if new_username and new_username != current_user.username:
+        # 新しいユーザーネームが既に使用されているかチェック
+        existing_user = User.query.filter_by(username=new_username).first()
+        if existing_user:
+            flash("このユーザー名は既に使用されています", "error")
+            return redirect(url_for('main.profile_edit'))
+        
+        # ユーザーネーム変更（古いユーザーネームは自動的に解放される）
+        old_username = current_user.username
+        current_user.username = new_username
+        
+        # post_data.dbのusersテーブルも更新（ポイント情報）
+        try:
+            basedir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+            DB_PATH = os.path.join(basedir, "post_data.db")
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute('UPDATE users SET username = ? WHERE username = ?', (new_username, old_username))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"post_data.db更新エラー: {e}")
+        
+        flash(f"ユーザー名を「{new_username}」に変更しました", "success")
+    
     # プロフィール情報更新
     current_user.bio = bio
     # アイコン画像処理
