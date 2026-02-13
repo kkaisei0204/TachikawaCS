@@ -11,40 +11,38 @@
 
     .profile-container {
       max-width: 700px;
-      margin: 60px auto;
-      padding: 20px;
+      margin: 0 auto 80px;
+      padding: 0;
     }
 
     .profile-card {
       background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .profile-header {
-      padding: 24px;
-      border-bottom: 2px solid #e0e0e0;
+      padding: 20px;
+      border-bottom: 1px solid #e0e0e0;
+      background: #f9f9f9;
     }
 
     .profile-title {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
       color: #000;
       margin: 0;
     }
 
     .profile-content {
-      padding: 30px;
+      padding: 20px;
     }
 
-    /* アイコン編集セクション */
     .icon-section {
       text-align: center;
-      margin-bottom: 30px;
-      padding: 25px;
+      margin-bottom: 25px;
+      padding: 20px;
       background: #f9f9f9;
-      border-radius: 12px;
+      border-radius: 8px;
     }
 
     .current-icon-label {
@@ -55,8 +53,8 @@
     }
 
     .icon-preview {
-      width: 120px;
-      height: 120px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       border: 3px solid #000;
       margin: 0 auto 15px;
@@ -71,8 +69,8 @@
     }
 
     .new-icon-preview {
-      width: 120px;
-      height: 120px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       border: 3px dashed #ddd;
       margin: 15px auto;
@@ -95,7 +93,7 @@
 
     .upload-button {
       display: inline-block;
-      padding: 12px 24px;
+      padding: 10px 20px;
       background: #000;
       color: white;
       border-radius: 8px;
@@ -114,67 +112,8 @@
       display: none;
     }
 
-    /* バナーセクション */
-    .banner-section {
-      margin-bottom: 30px;
-      padding: 25px;
-      background: #f9f9f9;
-      border-radius: 12px;
-    }
-
-    .banner-locked {
-      padding: 20px;
-      background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
-      border-radius: 12px;
-      text-align: center;
-    }
-
-    .banner-locked-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #666;
-      margin-bottom: 8px;
-    }
-
-    .banner-locked-text {
-      font-size: 14px;
-      color: #888;
-    }
-
-    .banner-unlocked {
-      padding: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 12px;
-      color: white;
-      margin-bottom: 15px;
-    }
-
-    .banner-unlocked-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .banner-unlocked-text {
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    .current-banner {
-      margin: 15px 0;
-    }
-
-    .current-banner img {
-      width: 100%;
-      max-width: 600px;
-      height: auto;
-      border-radius: 12px;
-      border: 3px solid #667eea;
-    }
-
-    /* フォームグループ */
     .form-group {
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
     .form-label {
@@ -191,7 +130,7 @@
       border: 2px solid #ddd;
       border-radius: 8px;
       font-size: 16px;
-      min-height: 120px;
+      min-height: 100px;
       resize: vertical;
       font-family: inherit;
     }
@@ -201,16 +140,15 @@
       border-color: #000;
     }
 
-    /* アクションボタン */
     .form-actions {
       display: flex;
       gap: 12px;
-      margin-top: 30px;
+      margin-top: 25px;
     }
 
     .submit-button {
       flex: 1;
-      padding: 14px;
+      padding: 12px;
       background: #000;
       color: white;
       border: none;
@@ -220,8 +158,6 @@
       cursor: pointer;
       transition: background 0.3s;
       font-family: inherit;
-      text-decoration: none;
-      text-align: center;
     }
 
     .submit-button:hover {
@@ -230,7 +166,7 @@
 
     .cancel-button {
       flex: 1;
-      padding: 14px;
+      padding: 12px;
       background: #f5f5f5;
       color: #333;
       border: 2px solid #ddd;
@@ -249,131 +185,46 @@
 
     .cancel-button:hover {
       background: #e0e0e0;
-      border-color: #999;
     }
 
-    /* ヘルプテキスト */
     .help-text {
       font-size: 12px;
       color: #666;
       margin-top: 5px;
     }
 
-    /* iPad mini (768px - 1024px) */
-    @media (min-width: 768px) and (max-width: 1024px) {
-      .profile-container {
-        max-width: 750px;
-        margin: 80px auto;
-        padding: 30px;
-      }
-
-      .profile-header {
-        padding: 30px;
-      }
-
-      .profile-title {
-        font-size: 28px;
-      }
-
-      .profile-content {
-        padding: 40px;
-      }
-
-      .icon-preview,
-      .new-icon-preview {
-        width: 150px;
-        height: 150px;
-      }
-
-      .icon-section,
-      .banner-section {
-        padding: 30px;
-      }
-
-      .form-textarea {
-        padding: 14px;
-        min-height: 140px;
-      }
-
-      .submit-button,
-      .cancel-button {
-        padding: 16px;
-        font-size: 18px;
-      }
-
-      .upload-button {
-        padding: 14px 28px;
-        font-size: 16px;
-      }
-    }
-
-    /* iPhone (375px - 767px) */
     @media (max-width: 767px) {
-      .profile-container {
-        margin: 20px auto;
-        padding: 15px;
-      }
-
       .profile-header {
-        padding: 20px;
-      }
-
-      .profile-title {
-        font-size: 22px;
+        padding: 18px;
       }
 
       .profile-content {
-        padding: 20px;
+        padding: 18px;
       }
 
-      .icon-section,
-      .banner-section {
-        padding: 20px;
-        margin-bottom: 20px;
-      }
-
-      .icon-preview,
-      .new-icon-preview {
-        width: 100px;
-        height: 100px;
+      .icon-section {
+        padding: 18px;
       }
 
       .form-actions {
         flex-direction: column;
       }
-
-      .banner-unlocked-title,
-      .banner-locked-title {
-        font-size: 15px;
-      }
-
-      .banner-unlocked-text,
-      .banner-locked-text {
-        font-size: 13px;
-      }
     }
 
-    /* iPhone SE (375px) */
     @media (max-width: 375px) {
-      .profile-container {
-        padding: 10px;
-        margin: 15px auto;
-      }
-
       .profile-header {
-        padding: 18px;
+        padding: 15px;
       }
 
       .profile-title {
-        font-size: 20px;
+        font-size: 18px;
       }
 
       .profile-content {
         padding: 15px;
       }
 
-      .icon-section,
-      .banner-section {
+      .icon-section {
         padding: 15px;
       }
 
@@ -381,26 +232,6 @@
       .new-icon-preview {
         width: 90px;
         height: 90px;
-      }
-
-      .upload-button {
-        padding: 10px 20px;
-        font-size: 13px;
-      }
-
-      .form-group {
-        margin-bottom: 20px;
-      }
-
-      .form-textarea {
-        padding: 10px;
-        min-height: 100px;
-      }
-
-      .submit-button,
-      .cancel-button {
-        padding: 12px;
-        font-size: 15px;
       }
     }
   </style>
@@ -434,7 +265,6 @@
   </header>
   <div class="menu-overlay" id="menuOverlay"></div>
 
-  <!-- フラッシュメッセージ -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-messages">
@@ -454,7 +284,6 @@
       <div class="profile-content">
         <form method="POST" action="{{ url_for('main.update_profile') }}" enctype="multipart/form-data">
           
-          <!-- アイコン編集 -->
           <div class="icon-section">
             <div class="current-icon-label">現在のアイコン</div>
             <div class="icon-preview">
@@ -470,49 +299,11 @@
             <p class="help-text">画像を選択するとアイコンが変更されます</p>
           </div>
 
-          <!-- 自己紹介 -->
           <div class="form-group">
             <label class="form-label">自己紹介</label>
             <textarea name="bio" class="form-textarea" placeholder="自己紹介を入力してください">{{ user.bio or '' }}</textarea>
           </div>
 
-          <!-- バナー編集 -->
-          <div class="banner-section">
-            <div class="form-label">プロフィールバナー</div>
-            
-            {% if rank_info and rank_info.can_set_banner %}
-              <div class="banner-unlocked">
-                <div class="banner-unlocked-title">バナー設定が解放されました！</div>
-                <div class="banner-unlocked-text">{{ rank_info.total_points }}ポイント獲得したため、プロフィールバナーを設定できます</div>
-              </div>
-              
-              {% if user.banner_path %}
-                <div class="current-banner">
-                  <p style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">現在のバナー:</p>
-                  <img src="{{ url_for('static', filename=user.banner_path) }}" alt="現在のバナー">
-                </div>
-              {% else %}
-                <p class="help-text" style="margin-bottom: 10px;">まだバナーが設定されていません</p>
-              {% endif %}
-              
-              <input type="file" id="bannerInput" name="banner" accept="image/*" style="margin-top: 10px;">
-              <p class="help-text">推奨サイズ: 1200x300ピクセル</p>
-            {% else %}
-              <div class="banner-locked">
-                <div class="banner-locked-title">バナー設定は未解放</div>
-                <div class="banner-locked-text">
-                  {% if rank_info %}
-                    現在 {{ rank_info.total_points }}ポイント / 必要 5,000ポイント<br>
-                    あと{{ 5000 - rank_info.total_points }}ポイントでバナー設定が解放されます！
-                  {% else %}
-                    5,000ポイント獲得すると、プロフィールバナーを設定できるようになります
-                  {% endif %}
-                </div>
-              </div>
-            {% endif %}
-          </div>
-
-          <!-- アクションボタン -->
           <div class="form-actions">
             <button type="submit" class="submit-button">更新する</button>
             <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="cancel-button">キャンセル</a>
@@ -522,8 +313,31 @@
     </div>
   </div>
 
+  <footer>
+    <nav>
+      <a href="{{ url_for('main.index') }}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        </svg>
+        <span>ホーム</span>
+      </a>
+      <a href="{{ url_for('topics.topics_page') }}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>トピックス</span>
+      </a>
+      <a href="{{ url_for('main.shops_list') }}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+          <path d="M9 3v18M3 9h18M3 15h18M15 3v18"></path>
+        </svg>
+        <span>飲食店</span>
+      </a>
+    </nav>
+  </footer>
+
   <script>
-    // アイコンプレビュー
     document.getElementById('iconInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (file) {
@@ -537,7 +351,6 @@
       }
     });
 
-    // モバイルメニュー
     document.getElementById('mobileMenuToggle')?.addEventListener('click', function() {
       this.classList.toggle('active');
       document.querySelector('.menu-outer01').classList.toggle('active');
@@ -546,7 +359,7 @@
 
     document.getElementById('menuOverlay')?.addEventListener('click', function() {
       document.getElementById('mobileMenuToggle').classList.remove('active');
-      document.querySelector('.menu-outer01').classList.remove('activate');
+      document.querySelector('.menu-outer01').classList.remove('active');
       this.classList.remove('active');
     });
   </script>
