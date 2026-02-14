@@ -5,53 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ユーザー管理 | 立川混雑シェア</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
-  <style>
-    body { background-color: #f4f7f6; margin: 0; padding-top: 56px; padding-bottom: 56px; min-height: 100vh; font-family: "Noto Sans JP", sans-serif; }
-    
-    /* ヘッダー */
-    header {
-      background-color: #3a3f48;
-      color: #ffffff;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 56px;
-      z-index: 1100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    }
-    .app_name h1 { margin: 0; font-size: 16px; font-weight: bold; color: #ffffff; }
-
-    /* フッター */
-    footer {
-      background-color: #3a3f48;
-      color: #ffffff;
-      position: fixed;
-      bottom: 0; left: 0; width: 100%; height: 50px;
-      z-index: 500;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: bold;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
-    }
-
-    /* コンテンツ */
-    .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
-    .admin-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .filter-wrapper { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-    .form-control { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; flex: 1; min-width: 150px; }
-    .btn-apply { padding: 8px 16px; background: #2f2f33; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
-    .btn-apply:hover { background: #1a1a1d; }
-    .table-responsive { overflow-x: auto; }
-    .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .admin-table th { background: #f8f9fa; padding: 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #dee2e6; }
-    .admin-table td { padding: 10px; border-bottom: 1px solid #dee2e6; }
-    .admin-table tbody tr:hover { background: #f8f9fa; }
-    .btn-detail { background: #2f2f33; color: white; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 11px; }
-
-    @media (max-width: 768px) { .filter-wrapper { flex-direction: column; } .form-control, .btn-apply { width: 100%; } }
-  </style>
 </head>
-<body>
-
+<body class="admin-page">
   <header>
     <div class="app_name"><h1>立川混雑シェア</h1></div>
     <button class="mobile-menu-toggle" id="mobileMenuToggle">
@@ -62,10 +17,21 @@
         <li><a href="{{ url_for('main.index') }}">トップ</a></li>
         <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
         <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
-        <li><a href="{{ url_for('main.admin_panel') }}">ユーザー管理</a></li>
-        <li><a href="{{ url_for('main.admin_dashboard') }}">ダッシュボード</a></li>
-        <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
-      </ul>        
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('main.admin_panel') }}">ユーザー管理</a></li>
+            <li><a href="{{ url_for('main.admin_dashboard') }}">ダッシュボード</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% endif %}
+      </ul>
     </div>
   </header>
   <div class="menu-overlay" id="menuOverlay"></div>
