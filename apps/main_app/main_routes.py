@@ -365,7 +365,7 @@ def admin_toggle_admin(user_id):
 def user_page(username):
     """ユーザーページ（そのユーザーの投稿・評価集計・平均評価）"""
     from apps.main_app.models import User
-    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_user_average_rating
+    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_user_average_rating, get_user_total_points
     # ユーザー取得
     user = User.query.filter_by(username=username).first_or_404()
     # 投稿一覧から該当ユーザー分だけ抽出
@@ -389,14 +389,17 @@ def user_page(username):
     user_posts.sort(key=lambda x: x['timestamp'], reverse=True)
     # 平均評価取得
     avg_rating = get_user_average_rating(username)
+    # ポイント取得
+    points_info = get_user_total_points(username)
     # レンダリング
     return render_template(
         'user_page.html',
         user=user,
         user_posts=user_posts,
-        avg_rating=avg_rating
+        avg_rating=avg_rating,
+        user_points=points_info['total_points']
     )
-
+    
 # プロフィール編集
 @main_bp.route("/profile/edit", methods=["GET"])
 @login_required

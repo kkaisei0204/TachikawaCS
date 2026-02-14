@@ -11,7 +11,7 @@
 
     .auth-container {
       max-width: 700px;
-      margin: 60px auto 100px;
+      margin: 30px auto 100px;
       padding: 20px;
     }
 
@@ -217,8 +217,24 @@
         <li><a href="{{ url_for('main.index') }}">トップ</a></li>
         <li><a href="{{ url_for('topics.topics_page') }}">トピックス</a></li>
         <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
+          {% if current_user.is_admin %}
+            <li><a href="{{ url_for('main.admin_panel') }}">管理者パネル</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+        {% else %}
+          <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+          <li><a href="{{ url_for('main.register') }}">新規登録</a></li>
+        {% endif %}
       </ul>
-    </div>
+    </div>  
   </header>
   <div class="menu-overlay" id="menuOverlay"></div>
 

@@ -13,7 +13,7 @@
     body {
       background-color: #f4f7f6;
       margin: 0;
-      padding-top: 60px; /* ヘッダー高さ */
+      padding-top: 80px; /* ヘッダー高さ */
       padding-bottom: 60px; /* フッター高さ */
       min-height: 100vh;
       font-family: "Noto Sans JP", sans-serif;
@@ -32,17 +32,6 @@
       box-sizing: border-box;
     }
     .app_name h1 { margin: 0; font-size: 18px; font-weight: bold; color: white; }
-
-    /* ハンバーガーメニューボタン */
-    .mobile-menu-toggle { 
-      background: transparent; border: none; width: 44px; height: 44px; 
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      position: relative;
-    }
-    .mobile-menu-toggle span { display: block; width: 24px; height: 2px; background-color: white; margin: 3px 0; transition: 0.3s; border-radius: 2px; }
-    .mobile-menu-toggle.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-    .mobile-menu-toggle.active span:nth-child(2) { opacity: 0; }
-    .mobile-menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
     /* オーバーレイ（暗幕） */
     .menu-overlay {
@@ -71,9 +60,9 @@
     }
 
     /* コンテンツ調整 */
-    .container { max-width: 800px; margin: 0 auto; padding: 20px 15px; }
+    .container { max-width: 800px; margin: 20 auto; padding: 40px 20px 15px; }
     
-    .user-profile { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .user-profile { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; margin-top: 20px;}    
     .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
     .profile-icon-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #333; }
     .profile-info h1 { margin: 0 0 5px 0; font-size: 20px; }
@@ -165,14 +154,21 @@
         <li><a href="{{ url_for('main.shops_list') }}">飲食店</a></li>
         {% if current_user.is_authenticated %}
           <li><a href="{{ url_for('post.post_page') }}">投稿</a></li>
+          <li class="user-info">
+            <a href="{{ url_for('main.user_page', username=current_user.username) }}" class="user-link">
+              <img src="{{ url_for('static', filename=current_user.icon_path) }}" alt="{{ current_user.username }}" class="user-icon-img">
+              {{ current_user.username }}さん
+            </a>
+          </li>
           {% if current_user.is_admin %}
             <li><a href="{{ url_for('main.admin_dashboard') }}">管理者パネル</a></li>
           {% endif %}
           <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
         {% else %}
           <li><a href="{{ url_for('main.login') }}">ログイン</a></li>
+          <li><a href="{{ url_for('main.register') }}">新規登録</a></li>
         {% endif %}
-      </ul>        
+      </ul>
     </div>
   </header>
   <div class="menu-overlay" id="menuOverlay"></div>
@@ -186,9 +182,6 @@
     </div>
   {% endif %}
 {% endwith %}
-
-  <div class="container">
-    <div class="user-profile">
       <div class="profile-header">
         <img src="{{ url_for('static', filename=user.icon_path) }}" alt="{{ user.username }}" class="profile-icon-img">
         <div class="profile-info">
@@ -196,10 +189,11 @@
           <p class="profile-bio">{{ user.bio if user.bio else '自己紹介はまだありません' }}</p>
           {% if current_user.is_authenticated and current_user.username == user.username %}
             <a href="{{ url_for('main.profile_edit') }}" style="font-size:12px; color:#333; text-decoration:none; border:1px solid #333; padding:4px 8px; border-radius:4px; display:inline-block; margin-top:5px;">プロフィール編集</a>
+            <span style="font-size:12px; color:#666; margin-left:10px;">ポイント: <span style="color:#f39c12; font-weight:600;">{{ user_points }}</span>pt</span>
           {% endif %}
         </div>
       </div>
-      
+
       <div class="profile-stats">
         <div class="stat-item"><div class="stat-value">{{ user_posts|length }}</div><div class="stat-label">投稿</div></div>
         <div class="stat-item"><div class="stat-value">{{ user_posts|sum(attribute='helpful_count') }}</div><div class="stat-label">いいね</div></div>

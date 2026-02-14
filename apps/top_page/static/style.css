@@ -2184,6 +2184,10 @@ body {
   cursor: pointer;
   z-index: 1001;
   flex-shrink: 0;
+  position: absolute;  /* 追加 */
+  right: 19px;         /* 追加（20pxから1px右に） */
+  top: 50%;            /* 追加 */
+  transform: translateY(-50%);  /* 追加 */
 }
 
 .mobile-menu-toggle span {
@@ -2194,6 +2198,17 @@ body {
   margin: 5px 0;
   transition: all 0.3s ease;
   border-radius: 2px;
+}
+
+/* ハンバーガーメニュー×ボタン */
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
 }
 
 /* ========================================
@@ -2328,20 +2343,18 @@ body {
     display: block;
   }
   
-  /* ハンバーガーアニメーション（×印に変化） */
-  .mobile-menu-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(7px, 7px);
-  }
-  
-  .mobile-menu-toggle.active span:nth-child(2) {
-    opacity: 0;
-  }
-  
-  .mobile-menu-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -7px);
-  }
+/* ハンバーガーアニメーション（×印に変化） */
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
 }
 
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
 
 /* ========================================
    🗺️ 地図 - タッチ操作最適化
