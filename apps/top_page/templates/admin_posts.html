@@ -1,59 +1,91 @@
-{% extends "base.html" %}
-{% block title %}投稿管理 | 管理者ダッシュボード{% endblock %}
+<!--このファイルは投稿の削除とか管理に使う-->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>投稿管理 | 管理者ダッシュボード</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="admin-header">
+        <h1>立川混雑シェア 管理モード</h1>
+        <nav>
+            <a href="{{ url_for('main.index') }}" style="color: #bdc3c7; text-decoration: none; font-size: 0.9rem;">一般サイトへ戻る</a>
+        </nav>
+    </header>
+    <div class="admin-wrapper">
+        <div class="admin-container">
+            <aside class="admin-sidebar">
+                <h2 class="sidebar-title">管理メニュー</h2>
+                <ul class="sidebar-menu">
+                    <li><a href="{{ url_for('main.admin_dashboard') }}">ダッシュボード</a></li>
+                    <li><a href="{{ url_for('main.admin_panel') }}">ユーザー管理</a></li>
+                    <li><a class="active" href="{{ url_for('main.admin_posts_list') }}">投稿管理</a></li>
+                    <li class="separator"><hr></li>
+                    <li><a href="{{ url_for('main.admin_panel') }}">管理トップへ戻る</a></li>
+                    <li><a href="{{ url_for('main.logout') }}">ログアウト</a></li>
+                </ul>
+            </aside>
 
-{% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='admin_layout.css') }}">
-
-<div class="admin-container">
-    <aside class="admin-sidebar">
-        <h2 class="sidebar-title">管理メニュー</h2>
-        <ul class="sidebar-menu">
-            <li><a href="{{ url_for('main.admin_dashboard') }}">ダッシュボード</a></li>
-            <li><a href="{{ url_for('main.admin_panel') }}">ユーザー管理</a></li>
-            <li><a class="active" href="{{ url_for('main.admin_posts_list') }}">投稿管理</a></li>
-            <li><a href="{{ url_for('main.admin_panel') }}">管理トップへ戻る</a></li>
-        </ul>
-    </aside>
-
-    <main class="admin-main-content">
-        <h1 class="main-title">投稿管理</h1>
-        <p class="summary-text">システムに投稿された全ての最新情報（{{ all_posts | length }}件）を一覧表示しています。</p>
-        
-        <div class="admin-layout">
-            {% if all_posts %}
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>店舗名</th>
-                            <th>投稿ユーザー</th>
-                            <th>混雑度</th>
-                            <th>コメント</th>
-                            <th>投稿日時</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for post in all_posts %}
-                        <tr>
-                            <td>{{ post.id }}</td>
-                            <td>{{ post.shop_name }}</td>
-                            <td>
-                                <a href="{{ url_for('main.admin_user_detail', user_id=post.user_id) }}">{{ post.user.username }}</a>
-                            </td>
-                            <td>
-                                <span class="crowd-level-{{ post.crowd_level }}">{{ post.crowd_level }}</span>
-                            </td>
-                            <td class="post-comment">{{ post.comment | default('コメントなし', true) | truncate(50) }}</td>
-                            <td>{{ post.timestamp.strftime('%Y/%m/%d %H:%M') }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p class="no-data">現在、投稿データはありません。</p>
-            {% endif %}
+            <main class="admin-main-content">
+                <div class="content-header">
+                    <h1 class="main-title">投稿管理</h1>
+                    <p class="summary-text">システムに投稿された全ての最新情報（<strong>{{ all_posts | length }}件</strong>）を一覧表示しています。</p>
+                </div>
+                
+                <div class="admin-layout">
+                    {% if all_posts %}
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>店舗名</th>
+                                        <th>投稿ユーザー</th>
+                                        <th>混雑度</th>
+                                        <th>コメント</th>
+                                        <th>投稿日時</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for post in all_posts %}
+                                    <tr>
+                                        <td>{{ post.id }}</td>
+                                        <td class="shop-name">{{ post.shop_name }}</td>
+                                        <td>
+                                            <a href="{{ url_for('main.admin_user_detail', user_id=post.user_id) }}" class="user-link">
+                                                {{ post.user.username }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="crowd-badge crowd-level-{{ post.crowd_level }}">
+                                                {{ post.crowd_level }}
+                                            </span>
+                                        </td>
+                                        <td class="post-comment">
+                                            {{ post.comment | default('コメントなし', true) | truncate(50) }}
+                                        </td>
+                                        <td class="post-date">
+                                            {{ post.timestamp.strftime('%Y/%m/%d %H:%M') }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="no-data-box">
+                            <p class="no-data">現在、投稿データはありません。</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </main>
         </div>
-    </main>
-</div>
+    </div>
 
-{% endblock %}
+    <footer style="text-align: center; padding: 20px; color: #7f8c8d; font-size: 0.8rem; background: #fff; border-top: 1px solid #ddd;">
+        &copy; 2026 立川混雑シェア 管理パネル
+    </footer>
+
+</body>
+</html>

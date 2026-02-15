@@ -2,54 +2,52 @@ import sqlite3
 from werkzeug.security import generate_password_hash
 import os
 
+DB_NAME = 'post_data.db'
+
 print("=" * 60)
-print("データベース初期化スクリプト")
+print("統合データベース初期化スクリプト (Ver 2.0)")
 print("=" * 60)
 
-# 既存のデータベースをバックアップ
-if os.path.exists('post_data.db'):
-    if os.path.getsize('post_data.db') > 0:
-        backup_name = 'post_data_backup.db'
-        if os.path.exists(backup_name):
-            os.remove(backup_name)
-        os.rename('post_data.db', backup_name)
-        print(f"既存のデータベースを {backup_name} にバックアップしました")
+# バックアップ処理
+if os.path.exists(DB_NAME):
+    backup_name = DB_NAME + '.bak'
+    if os.path.exists(backup_name): os.remove(backup_name)
+    os.rename(DB_NAME, backup_name)
+    print(f"既存のDBを {backup_name} に退避しました。")
 
-# 新しいデータベースを作成
-conn = sqlite3.connect('post_data.db')
+conn = sqlite3.connect(DB_NAME)
 c = conn.cursor()
 
-print("テーブルを作成中...")
-
-# usersテーブル作成
+# 1. usersテーブル (ポイント・バナー・アイコン・管理権限を統合)
 c.execute('''
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         is_admin INTEGER DEFAULT 0,
-        icon_path TEXT,
-        bio TEXT
+        icon_path TEXT DEFAULT 'uploads/icons/default.png',
+        banner_path TEXT,
+        bio TEXT,
+        total_points INTEGER DEFAULT 0
     )
 ''')
-print("usersテーブル作成")
 
-# postsテーブル作成
+# 2. postsテーブル (混雑状況投稿)
 c.execute('''
-    CREATE TABLE IF NOT EXISTS posts (
+    CREATE TABLE posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_name TEXT NOT NULL,
         shop_name TEXT NOT NULL,
         crowd_level TEXT NOT NULL,
         comment TEXT,
-        timestamp TEXT NOT NULL
+        timestamp TEXT NOT NULL,
+        helpful_count INTEGER DEFAULT 0
     )
 ''')
-print("postsテーブル作成")
 
-# ratingsテーブル作成
+# 3. ratingsテーブル (👍評価の重複防止用)
 c.execute('''
-    CREATE TABLE IF NOT EXISTS ratings (
+    CREATE TABLE ratings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         post_id INTEGER NOT NULL,
         user_name TEXT NOT NULL,
@@ -57,60 +55,35 @@ c.execute('''
         UNIQUE(post_id, user_name)
     )
 ''')
-print("ratingsテーブル作成")
 
-# reservationsテーブル作成
+# 4. reservationsテーブル (予約機能用)
 c.execute('''
-    CREATE TABLE IF NOT EXISTS reservations (
+    CREATE TABLE reservations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_name TEXT NOT NULL,
         shop_name TEXT NOT NULL,
-        date DATE NOT NULL,
-        time TIME NOT NULL,
+        date TEXT NOT NULL,
+        time TEXT NOT NULL,
         people INTEGER NOT NULL,
         comment TEXT
     )
 ''')
-print("reservationsテーブル作成")
 
-print("\nユーザーアカウントを作成中...")
+# 初期アカウント作成 (admin / test)
+accounts = [
+    ('admin', 'admin123', 1, '管理者です'),
+    ('test', 'test123', 0, 'テストユーザーです')
+]
 
-# adminアカウントを作成
-admin_password = 'admin123'
-admin_hash = generate_password_hash(admin_password)
-
-c.execute('''
-    INSERT INTO users (username, password, is_admin, icon_path, bio)
-    VALUES (?, ?, ?, ?, ?)
-''', ('admin', admin_hash, 1, 'uploads/icons/default.png', '管理者アカウント'))
-print(f"adminアカウント作成")
-
-# testアカウントを作成
-test_password = 'test123'
-test_hash = generate_password_hash(test_password)
-
-c.execute('''
-    INSERT INTO users (username, password, is_admin, icon_path, bio)
-    VALUES (?, ?, ?, ?, ?)
-''', ('test', test_hash, 0, 'uploads/icons/default.png', 'テストユーザー'))
-print(f"testアカウント作成")
+for uname, pwd, admin_flag, bio in accounts:
+    hashed_pwd = generate_password_hash(pwd)
+    c.execute('''
+        INSERT INTO users (username, password, is_admin, bio, icon_path)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (uname, hashed_pwd, admin_flag, bio, 'uploads/icons/default.png'))
 
 conn.commit()
 conn.close()
 
-print("\n" + "=" * 60)
-print("データベースの初期化が完了しました！")
-print("=" * 60)
-print("\n作成されたアカウント:")
-print("-" * 60)
-print("【管理者アカウント】")
-print(f"  ユーザー名: admin")
-print(f"  パスワード: {admin_password}")
-print(f"  権限: 管理者")
-print("\n【テストアカウント】")
-print(f"  ユーザー名: test")
-print(f"  パスワード: {test_password}")
-print(f"  権限: 一般ユーザー")
-print("=" * 60)
-print("\nログインURL: http://127.0.0.1:5000/login")
-print("=" * 60)
+print("\n[成功] すべてのテーブルを post_data.db に統合しました。")
+print("ログイン情報: admin / admin123")

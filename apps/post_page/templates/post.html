@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>投稿ページ | 立川混雑シェア</title>
-
   <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="manifest" href="/static/manifest.json">
@@ -14,7 +13,6 @@
   <meta name="apple-mobile-web-app-title" content="混雑シェア">
 </head>
 <body>
-
   <header>
     <div class="app_name">
       <h1>立川混雑シェア</h1>
@@ -50,21 +48,16 @@
     </div>
   </header>
   <div class="menu-overlay" id="menuOverlay"></div>
-  
-
-
   <div class="container">
     <!-- 投稿フォーム -->
     <section class="post-form">
       <h1>混雑状況を投稿する</h1>
-
       {% if location_check_enabled %}
       <div style="background-color: #e3f2fd; padding: 12px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
         <strong>位置情報チェック：有効</strong>
         <p style="margin: 5px 0 0 0; font-size: 14px;">店舗から{{ max_distance }}m以内で投稿できます。</p>
       </div>
       {% endif %}
-
       <!-- 未投稿店舗フィルター -->
       <div class="unposted-filter">
         <label class="checkbox-label">
@@ -78,11 +71,9 @@
           1時間以内に投稿がない店舗（マップから消えた店舗）に投稿すると<strong>ボーナスポイント</strong>がもらえます！
         </p>
       </div>
-
       <form id="postForm" method="POST" action="{{ url_for('post.submit_post') }}">
         <input type="hidden" id="latitude" name="latitude">
         <input type="hidden" id="longitude" name="longitude">
-        
         <div class="form-group">
           <label for="shop_name">店名・場所</label>
           <select id="shop_name" name="shop_name" required>
@@ -94,7 +85,6 @@
             {% endfor %}
           </select>
         </div>
-
         <div class="form-group">
           <label for="crowd_level">混雑状況</label>
           <select id="crowd_level" name="crowd_level" required>
@@ -104,21 +94,17 @@
             {% endfor %}
           </select>
         </div>
-
         <div class="form-group">
           <label for="comment">コメント</label>
           <textarea id="comment" name="comment" placeholder="例：午前中は比較的空いていました。" rows="3"></textarea>
         </div>
-
         <button type="submit" class="btn-submit" id="submitBtn">投稿する</button>
       </form>
     </section>
   </div>
-
   <footer>
     <p>© 2025 立川混雑シェアマップ</p>
-  </footer>
-
+  </footer> 
   <script>
   const locationCheckEnabled = {{ location_check_enabled|tojson }};
 
@@ -132,14 +118,12 @@
       getUserLocation();
     }
   });
-
   function getUserLocation() {
     if (!navigator.geolocation) {
       alert('お使いのブラウザは位置情報に対応していません。');
       unlockSubmit();
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       (position) => {
         document.getElementById('latitude').value = position.coords.latitude;
@@ -153,7 +137,8 @@
         if (error.code === error.POSITION_UNAVAILABLE) msg = '位置情報が利用できません。';
         if (error.code === error.TIMEOUT) msg = '位置情報の取得がタイムアウトしました。';
         alert(msg);
-        unlockSubmit(); // ここは仕様次第（「位置情報必須」なら unlockしない）
+        // ここは仕様次第（「位置情報必須」なら unlockしない）
+        unlockSubmit();
       },
       {
         enableHighAccuracy: true,
@@ -162,7 +147,6 @@
       }
     );
   }
-
   function lockSubmit(text) {
     const submitBtn = document.querySelector('#postForm button[type="submit"]');
     if (!submitBtn) return;
@@ -176,25 +160,20 @@
     submitBtn.disabled = false;
     submitBtn.textContent = '投稿する';
   }
-
   // 未投稿店舗フィルター機能
   const showUnpostedCheckbox = document.getElementById('showUnpostedOnly');
   const shopSelect = document.getElementById('shop_name');
-  
   if (showUnpostedCheckbox && shopSelect) {
     showUnpostedCheckbox.addEventListener('change', function() {
       const showUnpostedOnly = this.checked;
       const options = shopSelect.querySelectorAll('option');
-      
       options.forEach(option => {
         if (option.value === '') {
           // 「選択してください」は常に表示
           option.style.display = '';
           return;
         }
-        
         const isUnposted = option.getAttribute('data-is-unposted') === 'true';
-        
         if (showUnpostedOnly) {
           // 未投稿のみ表示
           option.style.display = isUnposted ? '' : 'none';
@@ -203,7 +182,6 @@
           option.style.display = '';
         }
       });
-      
       // 現在選択されている店舗が非表示になった場合、選択をリセット
       const selectedOption = shopSelect.options[shopSelect.selectedIndex];
       if (selectedOption && selectedOption.style.display === 'none') {
@@ -211,10 +189,8 @@
       }
     });
   }
-
   document.getElementById('postForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-
     // 位置情報チェックONなのに空なら送らない
     if (locationCheckEnabled) {
       const lat = document.getElementById('latitude').value;
@@ -224,28 +200,21 @@
         return;
       }
     }
-
     lockSubmit('投稿中...');
-
     const formData = new FormData(e.target);
-
     try {
       const response = await fetch('{{ url_for("post.submit_post") }}', {
         method: 'POST',
         body: formData
       });
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-
       const data = await response.json();
-
       if (data.success) {
         window.location.href = data.redirect;
         return;
       }
-
       alert(data.error || '投稿に失敗しました。');
     } catch (err) {
       console.error(err);
@@ -257,26 +226,22 @@
   });
   </script>
 
-
   <script>
     // モバイルメニュートグル
     const menuToggle = document.getElementById('mobileMenuToggle');
     const menuOuter = document.querySelector('.menu-outer01');
-    const menuOverlay = document.getElementById('menuOverlay');
-    
+    const menuOverlay = document.getElementById('menuOverlay');  
     if (menuToggle && menuOuter && menuOverlay) {
       menuToggle.addEventListener('click', function() {
         this.classList.toggle('active');
         menuOuter.classList.toggle('active');
         menuOverlay.classList.toggle('active');
       });
-      
       menuOverlay.addEventListener('click', function() {
         menuToggle.classList.remove('active');
         menuOuter.classList.remove('active');
         this.classList.remove('active');
       });
-      
       // メニュー項目クリック時に閉じる
       const menuLinks = menuOuter.querySelectorAll('a');
       menuLinks.forEach(link => {
@@ -288,6 +253,5 @@
       });
     }
   </script>
-
 </body>
 </html>

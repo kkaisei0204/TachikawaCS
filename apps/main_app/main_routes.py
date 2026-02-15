@@ -1,3 +1,4 @@
+# このファイルはアプリケーションの「表玄関」となる主要なページ表示と、ユーザー管理・管理者機能を集約したコントローラーです。
 # 必要なライブラリのインポート
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
@@ -17,10 +18,12 @@ def index():
     from apps.prediction.prediction import get_shop_total_post_count
     from apps.config import SHOP_LOCATIONS, SHOP_DETAILS, SHOP_LIST
     from datetime import datetime, timedelta
+    # 全投稿を取得してから、最新1時間の各店舗の最新投稿を抽出します。
     all_posts = get_all_posts()
     latest_by_shop = {}
     one_hour_ago = datetime.now() - timedelta(hours=1)
     now = datetime.now()
+    # 全投稿を走査して、最新1時間の各店舗の最新投稿を抽出します。店舗ごとに最新の投稿のみを保持し、古い投稿はスキップします。
     for post in all_posts:
         post_id = post[0]
         user_name = post[1]
@@ -28,25 +31,31 @@ def index():
         crowd_level = post[3]
         comment = post[4]
         timestamp = post[5]
+        # timestampをdatetimeオブジェクトに変換して、1時間以内の投稿のみ処理します。変換に失敗した場合はスキップします。
         try:
             dt = datetime.fromisoformat(timestamp)
         except Exception:
             continue
+        # 投稿が1時間より古い場合はスキップします。
         if dt < one_hour_ago:
             break
+        # 店舗ごとに最新の投稿のみを保持します。すでに同じ店舗の投稿がある場合はスキップします。
         shop_location = SHOP_LOCATIONS.get(shop_name)
         if not shop_location:
             continue
         if shop_name in latest_by_shop:
             continue
+        # 店舗の最新投稿として保存します。AI予測の有無や、店舗カテゴリ、店舗URLも合わせて保存します。
         total_posts = get_shop_total_post_count(shop_name, months=3)
         shop_detail = SHOP_DETAILS.get(shop_name, {})
         category = shop_detail.get('category', '該当しない')
         shop_url = ''
+        # SHOP_LISTから店舗URLを取得します。店舗名が一致するものを探し、URLがあれば保存します。
         for shop in SHOP_LIST:
             if shop['name'] == shop_name:
                 shop_url = shop.get('url', '')
                 break
+        # 時間表記の整形（例：5分前、1時間前、たった今）
         delta = now - dt
         if delta.total_seconds() < 60:
             time_ago = "たった今"
@@ -56,6 +65,7 @@ def index():
         else:
             hours = int(delta.total_seconds() / 3600)
             time_ago = f"{hours}時間前"
+        # 店舗の最新投稿として保存します。AI予測の有無や、店舗カテゴリ、店舗URLも合わせて保存します。
         latest_by_shop[shop_name] = {
             "shop_name": shop_name,
             "user_name": user_name,
@@ -69,6 +79,7 @@ def index():
             "time_ago": time_ago,
             "url": shop_url
         }
+    # テンプレートに渡すためのリストに変換します。店舗ごとに最新の投稿のみを保持しているため、最新の投稿が店舗の情報として表示されます。
     map_markers = list(latest_by_shop.values())
     return render_template('index.html', map_markers=map_markers)
 
@@ -78,24 +89,24 @@ def index():
 def login():
     """ログイン処理"""
     from apps.main_app.models import User
-
+    from werkzeug.security import check_password_hash
+    # POSTリクエスト時の処理
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-
+        # ユーザー名とパスワードが入力されているかチェックします。どちらかが空の場合はエラーメッセージを表示してログインページに戻ります。
         user = User.query.filter_by(username=username).first()
-
-        if user and user.password == password:
+        if user and check_password_hash(user.password, password):
             login_user(user)
             flash("ログインしました", "success")
             return redirect(url_for("main.index"))
         else:
             flash("ユーザー名またはパスワードが違います", "error")
-
     return render_template("login.html")
 
 # ログアウト
 @main_bp.route("/logout")
+# @login_requiredを付けることで、未ログインユーザーがアクセスした場合は自動的にログインページにリダイレクトされます。
 @login_required
 def logout():
     """ログアウト処理"""
@@ -107,10 +118,12 @@ def logout():
 @main_bp.route("/register", methods=["GET", "POST"])
 def register():
     """新規登録（アイコン画像必須・bio任意）"""
+    # ライブラリのインポート
     from apps.main_app.models import User
     from PIL import Image
     import uuid
     # POSTリクエスト時の処理
+    # ユーザー名とパスワード、アイコン画像が必須で、bioは任意です。アイコン画像はアップロードされたものを処理して保存します。ユーザー名は既存ユーザーと重複しないようにチェックします。
     if request.method == "POST":
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
@@ -194,6 +207,7 @@ def register():
     # GETリクエスト時は登録フォームを表示
     return render_template('register.html')
 
+# 管理者ルートはadmin_guard.pyの@admin_requiredデコレータを付けることで、管理者以外のアクセスを防止しています。これにより、セキュリティーの確保と、管理者機能の誤使用を防止しています。
 # 管理者
 @main_bp.route('/admin')
 @login_required
@@ -215,7 +229,6 @@ def admin_panel():
     if q:
         # 部分一致
         query = query.filter(User.username.contains(q))
-
     # 並び替え
     if sort == "id_asc":
         query = query.order_by(User.id.asc())
@@ -230,7 +243,6 @@ def admin_panel():
         query = query.order_by(User.id.desc())
     # ユーザー取得
     users = query.all()
-
     # 投稿数をまとめて計算
     post_counts = Counter()
     try:
@@ -239,7 +251,6 @@ def admin_panel():
             post_counts[p[1]] += 1
     except Exception:
         pass
-
     # テンプレで使いやすいよう整形
     users_view = []
     for u in users:
@@ -256,7 +267,7 @@ def admin_panel():
         q=q,
         sort=sort
     )
-
+# 管理者ルートはadmin_guard.pyの@admin_requiredデコレータを付けることで、管理者以外のアクセスを防止しています。これにより、セキュリティーの確保と、管理者機能の誤使用を防止しています。
 # ユーザー詳細
 @main_bp.route('/admin/user/<int:user_id>')
 @login_required
@@ -268,7 +279,7 @@ def admin_user_detail(user_id):
     from datetime import datetime
     # ユーザー取得
     user = User.query.get_or_404(user_id)
-
+    # ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
     # 投稿一覧から該当ユーザー分だけ抽出（最新10件）
     latest_posts = []
     posts_count = 0
@@ -279,7 +290,6 @@ def admin_user_detail(user_id):
             if p[1] != user.username:
                 continue
             posts_count += 1
-
             # 最新10件だけ表示用に詰める
             if len(latest_posts) < 10:
                 try:
@@ -300,7 +310,7 @@ def admin_user_detail(user_id):
                 })
     except Exception:
         pass
-
+    # AI予測の有無は、投稿数が10件以上であれば「あり」として表示します。
     # 平均評価（既存関数がある前提）
     try:
         avg_rating = get_user_average_rating(user.username)
@@ -314,7 +324,7 @@ def admin_user_detail(user_id):
         avg_rating=avg_rating,
         latest_posts=latest_posts
     )
-
+# 管理者ルートはadmin_guard.pyの@admin_requiredデコレータを付けることで、管理者以外のアクセスを防止しています。これにより、セキュリティーの確保と、管理者機能の誤使用を防止しています。
 # ユーザー削除
 @main_bp.route('/admin/user/<int:user_id>/delete', methods=['POST'])
 @login_required
@@ -359,6 +369,7 @@ def admin_toggle_admin(user_id):
     flash(f"'{user.username}' の権限を変更しました", "success")
     return redirect(url_for('main.admin_user_detail', user_id=user.id))
 
+# 管理者ルートはadmin_guard.pyの@admin_requiredデコレータを付けることで、管理者以外のアクセスを防止しています。これにより、セキュリティーの確保と、管理者機能の誤使用を防止しています。
 # ユーザーページ
 @main_bp.route('/user/<username>')
 @login_required
@@ -372,6 +383,7 @@ def user_page(username):
     all_posts = get_all_posts()
     user_posts = []
     # 全投稿走査
+    # ユーザーページでは、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
     for post_id, post_user_name, shop_name, crowd_level, comment, timestamp in all_posts:
         if post_user_name == username:
             helpful, not_helpful = get_post_ratings(post_id)
@@ -400,13 +412,13 @@ def user_page(username):
         user_points=points_info['total_points']
     )
     
+# ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
 # プロフィール編集
 @main_bp.route("/profile/edit", methods=["GET"])
 @login_required
 def profile_edit():
     """プロフィール編集ページ（表示）"""
     from apps.post_page.post_db import get_user_total_points, can_set_banner
-    
     # ユーザーのポイント情報を取得
     points_info = get_user_total_points(current_user.username)
     rank_info = {
@@ -418,6 +430,7 @@ def profile_edit():
     # レンダリング
     return render_template("profile_edit.html", user=current_user, rank_info=rank_info)
 
+# ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
 # プロフィール更新
 @main_bp.route("/profile/update", methods=["POST"])
 @login_required
@@ -427,11 +440,9 @@ def update_profile():
     from apps.main_app.models import User
     import uuid
     import sqlite3
-    
     # フォームデータ取得
     new_username = request.form.get("username", "").strip()
     bio = request.form.get("bio", "")
-    
     # ユーザーネーム変更処理
     if new_username and new_username != current_user.username:
         # 新しいユーザーネームが既に使用されているかチェック
@@ -439,11 +450,9 @@ def update_profile():
         if existing_user:
             flash("このユーザー名は既に使用されています", "error")
             return redirect(url_for('main.profile_edit'))
-        
         # ユーザーネーム変更（古いユーザーネームは自動的に解放される）
         old_username = current_user.username
         current_user.username = new_username
-        
         # post_data.dbのusersテーブルも更新（ポイント情報）
         try:
             basedir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -455,9 +464,7 @@ def update_profile():
             conn.close()
         except Exception as e:
             print(f"post_data.db更新エラー: {e}")
-        
         flash(f"ユーザー名を「{new_username}」に変更しました", "success")
-    
     # プロフィール情報更新
     current_user.bio = bio
     # アイコン画像処理
@@ -511,53 +518,13 @@ def update_profile():
     db.session.commit()
     flash("プロフィールを更新しました！", "success")
     return redirect(url_for("main.user_page", username=current_user.username))
-
+# ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
 # 大原亭店舗ページと予約処理
 @main_bp.route("/shop/oharatei")
 def oharatei():
     """大原亭の店舗ページを表示"""
     return render_template("oharatei.html")
-
-# 大原亭予約処理
-@main_bp.route("/shop/oharatei/reservation", methods=["POST"])
-def oharatei_reservation():
-    """大原亭の予約を処理"""
-    from apps.main_app.models import Reservation
-    from datetime import datetime
-    # フォームデータ取得と予約登録
-    try:
-        customer_name = request.form.get("customer_name")
-        phone = request.form.get("phone")
-        reservation_date = request.form.get("reservation_date")
-        reservation_time = request.form.get("reservation_time")
-        people = request.form.get("people")
-        comment = request.form.get("comment", "")
-        # 日時オブジェクト変換
-        date_obj = datetime.strptime(reservation_date, "%Y-%m-%d").date()
-        time_obj = datetime.strptime(reservation_time, "%H:%M").time()
-        # 予約登録
-        new_reservation = Reservation(
-            user_name=customer_name,
-            shop_name="大原亭",
-            date=date_obj,
-            time=time_obj,
-            people=int(people),
-            comment=comment
-        )
-        db.session.add(new_reservation)
-        db.session.commit()
-        # 完了メッセージ
-        flash(
-            f"ご予約を承りました！{customer_name}様、{reservation_date} {reservation_time}に{people}名様でお待ちしております。",
-            "success"
-        )
-        return redirect(url_for("main.oharatei") + "#reserve")
-    # 例外処理
-    except Exception as e:
-        print(f"予約エラー: {e}")
-        flash("予約の処理中にエラーが発生しました。もう一度お試しください。", "error")
-        return redirect(url_for("main.oharatei") + "#reserve")
-
+# ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
 # 管理者
 @main_bp.route('/admin/dashboard')
 @login_required
@@ -574,7 +541,6 @@ def admin_dashboard():
     from datetime import datetime, timedelta
     from collections import Counter, defaultdict
     from apps.post_page.post_db import get_all_posts
-    from apps.main_app.models import Reservation
     import sqlite3
     # 全投稿取得
     all_posts = get_all_posts()
@@ -642,36 +608,6 @@ def admin_dashboard():
     # データ整形
     crowd_labels = list(crowd_counter.keys())
     crowd_data = list(crowd_counter.values())
-
-    
-    # 予約推移（選択期間）
-    if window_start is None:
-        reservations_window = Reservation.query.all()
-    else:
-        reservations_window = Reservation.query.filter(Reservation.created_at >= window_start).all()
-    # 予約日別・時間帯別集計
-    res_by_day = Counter()
-    res_by_hour = Counter()
-    # 集計
-    for r in reservations_window:
-        try:
-            res_by_day[r.created_at.strftime("%m/%d")] += 1
-        except Exception:
-            pass
-        try:
-            res_by_hour[r.time.hour] += 1
-        except Exception:
-            pass
-    # データ整形
-    res_day_labels = []
-    res_day_values = []
-    for i in range(label_span, -1, -1):
-        d = (now - timedelta(days=i)).strftime("%m/%d")
-        res_day_labels.append(d)
-        res_day_values.append(res_by_day.get(d, 0))
-    # 時間帯別（9-21時）
-    hour_labels = [f"{h}時" for h in range(9, 22)]
-    hour_values = [res_by_hour.get(h, 0) for h in range(9, 22)]
 
     # 総評価数（ratings）
     basedir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -753,36 +689,29 @@ def admin_dashboard():
     # KPI
     total_posts = len(all_posts)
     posts_window_count = sum(day_values)
-    reservations_window_count = len(reservations_window)
-
+    # KPIとグラフデータの整理（予約関連を削除）
     dashboard = {
         "window": {"days": window_days, "label_span": label_span},
         "kpi": {
-            "total_posts": total_posts,
-            "posts_last30": posts_window_count,               
+            "total_posts": len(all_posts),
+            "posts_last30": posts_window_count,
             "total_ratings": total_ratings,
-            "reservations_last30": reservations_window_count, 
             "overall_ai_accuracy": overall_accuracy,
         },
         "shop_bar": {"labels": shop_labels, "data": shop_data},
         "posts_line_30": {"labels": day_labels, "data": day_values},
         "crowd_donut_30": {"labels": crowd_labels, "data": crowd_data},
-        "reservations_line_30": {"labels": res_day_labels, "data": res_day_values},
-        "reservations_by_hour": {"labels": hour_labels, "data": hour_values},
-        "ai_worst": worst_accuracy,
-        "anomalies": anomalies,
+        # 予約関連の labels/data はここから消しました
     }
-    # レンダリング
     return render_template('admin_dashboard.html', dashboard=dashboard)
-
-
-# 管理者
+# 管理者ルートはadmin_guard.pyの@admin_requiredデコレータを付けることで、管理者以外のアクセスを防止しています。これにより、セキュリティーの確保と、管理者機能の誤使用を防止しています。
+# 店舗別ダッシュボード
 @main_bp.route('/admin/dashboard/shop/<path:shop_name>')
 @login_required
 @admin_required
 def admin_shop_dashboard(shop_name):
     """
-    店舗別ダッシュボード（本格版）
+    店舗別ダッシュボード（予約機能を排除したスリム版）
     - 期間切替（?days=7/30/90/all）
     - 投稿推移（日別）
     - 混雑レベル割合
@@ -794,14 +723,16 @@ def admin_shop_dashboard(shop_name):
     from datetime import datetime, timedelta
     from collections import Counter, defaultdict
     from apps.post_page.post_db import get_all_posts
-    from apps.main_app.models import Reservation
+    
     # 現在日時取得
     now = datetime.now()
+    
     # 集計期間切替
     days_arg = (request.args.get("days") or "30").lower().strip()
     allowed = {"7", "30", "90", "all"}
     if days_arg not in allowed:
         days_arg = "30"
+    
     # 期間設定
     if days_arg == "all":
         window_start = None
@@ -810,18 +741,17 @@ def admin_shop_dashboard(shop_name):
         window_days = int(days_arg)
         window_start = now - timedelta(days=window_days)
 
-    # 推移ラベルの最大は 90日（allでも長すぎないように）
+    # 推移ラベルの最大は 90日
     label_span = 90 if window_days == "all" else window_days
-
     
     # 固定期間（AI学習/異常検知）
     days_90 = now - timedelta(days=90)
     hours_1 = now - timedelta(hours=1)
     days_7 = now - timedelta(days=7)
 
-    
     # 投稿データ取得
     all_posts = get_all_posts()
+    
     # 店舗別投稿抽出
     shop_posts = []  # (p, dt)
     for p in all_posts:
@@ -833,18 +763,17 @@ def admin_shop_dashboard(shop_name):
             continue
         shop_posts.append((p, dt))
 
-    
     # 期間内投稿（window）を作る
     posts_window = []
     for p, dt in shop_posts:
         if (window_start is None) or (dt >= window_start):
             posts_window.append((p, dt))
 
-    
     # 投稿推移（日別）
     posts_by_day = Counter()
     for p, dt in posts_window:
         posts_by_day[dt.strftime("%m/%d")] += 1
+        
     # 日別投稿数データ整形
     day_labels = []
     day_values = []
@@ -853,7 +782,6 @@ def admin_shop_dashboard(shop_name):
         day_labels.append(d)
         day_values.append(posts_by_day.get(d, 0))
 
-    
     # 混雑割合（期間内）
     crowd_counter = Counter()
     for p, dt in posts_window:
@@ -864,10 +792,10 @@ def admin_shop_dashboard(shop_name):
     # 曜日別/時間帯別 投稿数（期間内）
     weekday_counter = Counter()  
     hour_counter = Counter()     
-    # 集計ループ
     for p, dt in posts_window:
         weekday_counter[dt.weekday()] += 1
         hour_counter[dt.hour] += 1
+        
     # データ整形
     weekday_labels = ["月", "火", "水", "木", "金", "土", "日"]
     weekday_values = [weekday_counter.get(i, 0) for i in range(7)]
@@ -875,13 +803,12 @@ def admin_shop_dashboard(shop_name):
     hour_labels = [f"{h}時" for h in range(9, 22)]
     hour_values = [hour_counter.get(h, 0) for h in range(9, 22)]
 
-    
     # AI精度（簡易）
     slot_counter = defaultdict(Counter)
     for p, dt in shop_posts:
         if dt >= days_90:
             slot_counter[(dt.weekday(), dt.hour)][p[3]] += 1
-    # 評価ループ
+            
     total_eval = 0
     total_hit = 0
     for p, dt in posts_window:
@@ -893,12 +820,9 @@ def admin_shop_dashboard(shop_name):
         total_eval += 1
         if predicted == actual:
             total_hit += 1
-    # 精度計算
     ai_acc = round((total_hit / total_eval) * 100, 1) if total_eval else None
 
-
     # 異常検知（店舗単体）
-    # 直近1時間 >=3件 かつ 過去7日平均との差の2倍以上
     recent_1h = 0
     last7d_total = 0
     for p, dt in shop_posts:
@@ -914,20 +838,17 @@ def admin_shop_dashboard(shop_name):
             "count_1h": recent_1h,
             "avg_1h": round(avg_per_hour, 2)
         }
-    # 投稿者ランキング（期間内：上位5）
-
+        
+    # 投稿者ランキング（上位5）
     user_counter = Counter()
     for p, dt in posts_window:
         user_counter[p[1]] += 1
-    # データ整形
     top_users = [
         {"user": name, "count": cnt}
         for name, cnt in user_counter.most_common(5)
     ]
 
-
     # 最新投稿（最大10件）
-
     latest_posts = sorted(shop_posts, key=lambda x: x[1], reverse=True)[:10]
     latest_posts_view = [
         {
@@ -939,41 +860,7 @@ def admin_shop_dashboard(shop_name):
         for p, dt in latest_posts
     ]
 
-    # 予約（店名で紐付けできる場合のみ）
-    #   期間内の予約推移（日別）
-    shop_res = []
-    try:
-        if hasattr(Reservation, "shop_name"):
-            q = Reservation.query.filter(Reservation.shop_name == shop_name)
-            if window_start is not None:
-                q = q.filter(Reservation.created_at >= window_start)
-            shop_res = q.all()
-    except Exception:
-        shop_res = []
-    # 予約推移（日別・時間帯別）
-    res_by_day = Counter()
-    res_by_hour = Counter()
-    for r in shop_res:
-        try:
-            res_by_day[r.created_at.strftime("%m/%d")] += 1
-        except Exception:
-            pass
-        try:
-            res_by_hour[r.time.hour] += 1
-        except Exception:
-            pass
-    # データ整形
-    res_day_labels = []
-    res_day_values = []
-    for i in range(label_span, -1, -1):
-        d = (now - timedelta(days=i)).strftime("%m/%d")
-        res_day_labels.append(d)
-        res_day_values.append(res_by_day.get(d, 0))
-    # 時間帯別（9-21時）
-    res_hour_labels = [f"{h}時" for h in range(9, 22)]
-    res_hour_values = [res_by_hour.get(h, 0) for h in range(9, 22)]
-
-    # データまとめ
+    # データまとめ（予約関連の項目はすべて削除しました）
     data = {
         "shop_name": shop_name,
         "window": {
@@ -984,7 +871,6 @@ def admin_shop_dashboard(shop_name):
             "posts_total": len(shop_posts),               
             "posts_window": sum(day_values),              
             "ai_accuracy": ai_acc,
-            "reservations_window": len(shop_res),         
         },
         "anomaly": anomaly,
         "top_users": top_users,
@@ -992,14 +878,12 @@ def admin_shop_dashboard(shop_name):
         "crowd_donut": {"labels": crowd_labels, "data": crowd_data},
         "posts_by_weekday": {"labels": weekday_labels, "data": weekday_values},
         "posts_by_hour": {"labels": hour_labels, "data": hour_values},
-        "reservations_line": {"labels": res_day_labels, "data": res_day_values},
-        "reservations_by_hour": {"labels": res_hour_labels, "data": res_hour_values},
         "latest_posts": latest_posts_view
     }
 
     return render_template("admin_shop_dashboard.html", data=data)
 
-
+# 管理者ルートはadmin_guard.pyの@admin_requiredデコレータを付けることで、管理者以外のアクセスを防止しています。これにより、セキュリティーの確保と、管理者機能の誤使用を防止しています。
 # 店舗一覧・詳細ページ
 @main_bp.route('/shops')
 def shops_list():
@@ -1078,88 +962,75 @@ def shops_list():
         })
     # レンダリング
     return render_template('shops_list.html', shops=shops)
+# 店舗一覧ページでは、店舗ごとに詳細カテゴリーを主要カテゴリーにマッピングして表示しています。これにより、ユーザーは店舗の特徴をより簡単に理解できるようになります。また、店舗の説明や看板メニューも表示することで、ユーザーが訪れたい店舗を見つけやすくしています。
 # 店舗詳細ページ
-@main_bp.route('/shop/<shop_name>')
-def shop_detail(shop_name):
-    """店舗詳細ページ - 最新10件の投稿とAI予測を表示"""
-    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_ai_prediction
-    from apps.prediction.prediction import predict_hourly_crowd, get_best_time_to_visit
-    from apps.config import SHOP_LIST
-    from datetime import datetime
-    # 店舗情報取得
-    shop_info = None
-    for shop in SHOP_LIST:
-        if shop['name'] == shop_name:
-            shop_info = shop
-            break
-    # 店舗が見つからない場合はリダイレクト
-    if not shop_info:
-        flash('店舗が見つかりません', 'error')
-        return redirect(url_for('main.index'))
-    # 最新10件の投稿取得
-    all_posts = get_all_posts()
-    recent_posts = []
-    # 全投稿走査
-    for post in all_posts:
-        if post[2] == shop_name:
-            post_id = post[0]
-            user_name = post[1]
-            crowd_level = post[3]
-            comment = post[4]
-            timestamp = post[5]
-            # 日時変換と経過時間計算
+# プロフィール更新（保存）
+@main_bp.route("/profile/update", methods=["POST"])
+@login_required
+def shop_detail(shop_name=None): 
+    """プロフィール編集（保存）"""
+    from PIL import Image
+    from apps.main_app.models import User
+    from werkzeug.security import generate_password_hash
+    import uuid
+    import sqlite3
+
+    # 1. フォームデータ取得
+    new_username = request.form.get("username", "").strip()
+    bio = request.form.get("bio", "")
+    new_password = request.form.get("password")
+
+    # 2. ユーザーネーム変更処理
+    if new_username and new_username != current_user.username:
+        existing_user = User.query.filter_by(username=new_username).first()
+        if existing_user:
+            flash("このユーザー名は既に使用されています", "error")
+            return redirect(url_for('main.profile_edit'))
+        
+        old_username = current_user.username
+        current_user.username = new_username
+        
+        try:
+            basedir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+            DB_PATH = os.path.join(basedir, "post_data.db")
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute('UPDATE users SET username = ? WHERE username = ?', (new_username, old_username))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"post_data.db更新エラー: {e}")
+        flash(f"ユーザー名を「{new_username}」に変更しました", "success")
+
+    # 3. プロフィール情報更新
+    current_user.bio = bio
+
+    # パスワード変更処理
+    if new_password:
+        current_user.password = generate_password_hash(new_password)
+        flash("パスワードを変更しました", "success")
+
+    # 5. アイコン画像処理 (既存のロジックを維持)
+    if "icon" in request.files:
+        file = request.files["icon"]
+        if file and file.filename != "":
             try:
-                dt = datetime.fromisoformat(timestamp)
-                # 評価数取得
-                helpful, not_helpful = get_post_ratings(post_id)
-                # 経過時間計算
-                diff = datetime.now() - dt
-                seconds = diff.total_seconds()
-                # 経過時間を日本語表記に変換
-                if seconds < 60:
-                    time_ago = f"{int(seconds)}秒前"
-                elif seconds < 3600:
-                    time_ago = f"{int(seconds // 60)}分前"
-                elif seconds < 86400:
-                    time_ago = f"{int(seconds // 3600)}時間前"
-                else:
-                    time_ago = f"{int(seconds // 86400)}日前"
-                # 投稿データを追加
-                recent_posts.append({
-                    'post_id': post_id,
-                    'user_name': user_name,
-                    'crowd_level': crowd_level,
-                    'comment': comment,
-                    'timestamp': timestamp,
-                    'time_ago': time_ago,
-                    'helpful_count': helpful,
-                    'not_helpful_count': not_helpful
-                })
-                # 最新10件で終了
-                if len(recent_posts) >= 10:
-                    break
-            except Exception:
-                continue
-            # AI予測データ取得
-            current_weekday = datetime.now().weekday()  # 0=月曜日, 6=日曜日
-            
-            # shop_nameからshop_idを取得（SHOP_LISTのインデックス+1）
-            shop_id = None
-            for idx, shop in enumerate(SHOP_LIST):
-                if shop['name'] == shop_name:
-                    shop_id = idx + 1
-                    break
+                filename = secure_filename(file.filename)
+                file_ext = os.path.splitext(filename)[1].lower()
+                unique_filename = f"{uuid.uuid4().hex}{file_ext}"
+                basedir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+                upload_folder = os.path.join(basedir, 'apps', 'top_page', 'static', 'uploads', 'icons')
+                os.makedirs(upload_folder, exist_ok=True)
                 
-            # shop_idが見つからない場合はデフォルト値
-            if shop_id is None:
-                shop_id = 1
-            
-            prediction_data = get_ai_prediction(shop_name, current_weekday)
-            
-            # レンダリング
-            return render_template(
-                'ai_prediction.html',
-                shop=shop_info,
-                recent_posts=recent_posts,
-                prediction_data=prediction_data
-            )
+                filepath = os.path.join(upload_folder, unique_filename)
+                img = Image.open(file)
+                # 正方形クロップ・リサイズ処理
+                img.save(filepath, quality=85, optimize=True)
+                current_user.icon_path = f"uploads/icons/{unique_filename}"
+            except Exception as e:
+                print(f"画像処理エラー: {e}")
+
+    # 6. 保存とリダイレクト
+    db.session.commit()
+    flash("プロフィールを更新しました！", "success")
+    return redirect(url_for("main.user_page", username=current_user.username))

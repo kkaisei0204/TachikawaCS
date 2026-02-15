@@ -1,3 +1,5 @@
+# このファイルの役割は「ユーザーが投稿を行う、または自分の投稿を管理する」機能の制御を担当するコントローラーです
+# ライブラリのインポート
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from datetime import datetime, timedelta
 import math
@@ -11,7 +13,7 @@ post_bp = Blueprint('post', __name__, template_folder='templates', static_folder
 # アプリ起動時にDB初期化
 init_db()
 
-# 計算する関数
+# calculate_distance()は、2点間の緯度経度を受け取り、その距離をメートル単位で計算する関数です。Haversine公式を使用して地球上の2点間の距離を正確に計算します。これにより、ユーザーが店舗から一定距離内にいるかどうかを判断するための基礎となります。
 def calculate_distance(lat1, lon1, lat2, lon2):
     """
     2点間の距離を計算（Haversine公式）
@@ -29,10 +31,10 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     a = math.sin(delta_phi / 2) ** 2 + \
         math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    
+    # 距離をメートルで返す
     distance = R * c
     return distance
-
+# check_location_within_range()は、ユーザーの緯度経度と店舗名を受け取り、ユーザーが店舗から指定された距離内にいるかどうかを判断する関数です。店舗の位置情報はSHOP_LOCATIONSから取得され、calculate_distance()関数を使用してユーザーと店舗の距離を計算します。位置情報チェックが無効になっている場合は常にTrueを返します。これにより、ユーザーが店舗から一定距離内にいることを確認してから投稿を許可することができます。
 def check_location_within_range(user_lat, user_lon, shop_name):
     """
     ユーザーの位置が店舗から指定範囲内かチェック
@@ -46,7 +48,6 @@ def check_location_within_range(user_lat, user_lon, shop_name):
     shop_location = SHOP_LOCATIONS.get(shop_name)
     if not shop_location:
         return False, None
-    
     shop_lat = shop_location['lat']
     shop_lon = shop_location['lng']
     
@@ -55,15 +56,15 @@ def check_location_within_range(user_lat, user_lon, shop_name):
     
     # 指定距離以内かチェック
     within_range = distance <= MAX_DISTANCE_METERS
-    
+    # 範囲内かどうかと距離を返す
     return within_range, distance
 
+# get_unposted_shops()は、SHOP_LISTにある店舗の中で、直近1時間以内に投稿がない店舗のリストを取得する関数です。これにより、ユーザーがどの店舗が未投稿であるかを確認できるようになります。店舗ごとにget_posts_by_shop()関数を使用して投稿を取得し、投稿のタイムスタンプをチェックして1時間以内の投稿があるかどうかを判断します。未投稿の店舗はunposted_shopsリストに追加され、最終的に返されます。
 # 未投稿店舗を判定する関数
 def get_unposted_shops():
     """1時間以内に投稿がない店舗のリストを取得"""
     unposted_shops = []
     one_hour_ago = datetime.now() - timedelta(hours=1)
-    
     for shop in SHOP_LIST:
         shop_name = shop["name"]
         # この店舗の投稿を取得
@@ -84,10 +85,11 @@ def get_unposted_shops():
         # 1時間以内に投稿がなければ未投稿リストに追加
         if not has_recent_post:
             unposted_shops.append(shop_name)
-    
+    # 未投稿店舗のリストを返す
     return unposted_shops
 
 # 投稿ページ
+# post_bp.route('/post', methods=['GET'])は、ユーザーが投稿ページにアクセスしたときに呼び出されるルートを定義しています。このルートはGETリクエストを受け付け、ユーザーが投稿フォームを表示できるようにします。ルート内では、店舗名のリストを作成し、未投稿店舗のリストを取得してから、post.htmlテンプレートをレンダリングして返します。これにより、ユーザーは店舗の混雑状況を投稿するためのフォームを見ることができます。
 @post_bp.route('/post', methods=['GET'])
 @login_required
 def post_page():
