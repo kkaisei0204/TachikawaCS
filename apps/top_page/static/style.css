@@ -658,6 +658,7 @@ user-rating-small {
   color: #2f2f33;
   margin-bottom: 20px;
   font-size: 20px;
+  padding-left: 15px;
 }
 
 .user-posts-list {
@@ -2724,6 +2725,7 @@ body {
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin-top: 20px;
+  padding: 0 15px;
 }
 
 /* PC・タブレットでは3列 */
@@ -2810,12 +2812,13 @@ body {
 .post-actions {
   display: flex;
   gap: 8px;
+  justify-content: center; 
 }
 
 .btn-edit-small,
 .btn-delete-small {
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: 6px 12px;
+  font-size: 13px;
   border-radius: 6px;
   text-decoration: none;
   font-weight: 600;
