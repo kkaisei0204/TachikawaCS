@@ -13,7 +13,7 @@ main_bp = Blueprint("main", __name__)
 @main_bp.route('/')
 def index():
     # 最新1時間の各店舗の最新投稿を取得
-    from apps.post_page.post_db import get_all_posts
+    from apps.post_page.post_db import get_all_posts, get_ai_prediction
     from apps.prediction.prediction import get_shop_total_post_count
     from apps.config import SHOP_LOCATIONS, SHOP_DETAILS, SHOP_LIST
     from datetime import datetime, timedelta
@@ -264,7 +264,7 @@ def admin_panel():
 def admin_user_detail(user_id):
     """管理者専用：ユーザー詳細（投稿数/平均評価/最新投稿など）"""
     from apps.main_app.models import User
-    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_user_average_rating
+    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_ai_prediction
     from datetime import datetime
     # ユーザー取得
     user = User.query.get_or_404(user_id)
@@ -365,7 +365,7 @@ def admin_toggle_admin(user_id):
 def user_page(username):
     """ユーザーページ（そのユーザーの投稿・評価集計・平均評価）"""
     from apps.main_app.models import User
-    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_user_average_rating, get_user_total_points
+    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_user_average_rating, get_user_total_points, get_ai_prediction
     # ユーザー取得
     user = User.query.filter_by(username=username).first_or_404()
     # 投稿一覧から該当ユーザー分だけ抽出
@@ -1082,7 +1082,7 @@ def shops_list():
 @main_bp.route('/shop/<shop_name>')
 def shop_detail(shop_name):
     """店舗詳細ページ - 最新10件の投稿とAI予測を表示"""
-    from apps.post_page.post_db import get_all_posts, get_post_ratings
+    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_ai_prediction
     from apps.prediction.prediction import predict_hourly_crowd, get_best_time_to_visit
     from apps.config import SHOP_LIST
     from datetime import datetime
@@ -1140,14 +1140,26 @@ def shop_detail(shop_name):
                     break
             except Exception:
                 continue
-    # AI予測データ取得
-    prediction_data = predict_hourly_crowd(shop_name)
-    best_time = get_best_time_to_visit(shop_name)
-    # レンダリング
-    return render_template(
-        'ai_prediction.html',
-        shop=shop_info,
-        recent_posts=recent_posts,
-        prediction_data=prediction_data,
-        best_time=best_time
-    )
+            # AI予測データ取得
+            current_weekday = datetime.now().weekday()  # 0=月曜日, 6=日曜日
+            
+            # shop_nameからshop_idを取得（SHOP_LISTのインデックス+1）
+            shop_id = None
+            for idx, shop in enumerate(SHOP_LIST):
+                if shop['name'] == shop_name:
+                    shop_id = idx + 1
+                    break
+                
+            # shop_idが見つからない場合はデフォルト値
+            if shop_id is None:
+                shop_id = 1
+            
+            prediction_data = get_ai_prediction(shop_name, current_weekday)
+            
+            # レンダリング
+            return render_template(
+                'ai_prediction.html',
+                shop=shop_info,
+                recent_posts=recent_posts,
+                prediction_data=prediction_data
+            )

@@ -3015,9 +3015,9 @@ body {
 /* admin.html, admin_dashboard.html, admin_user_detail.html 用 */
 body.admin-page {
   background-color: #f4f7f6;
+  padding-top: 0;
   padding-bottom: 56px;
 }
-
 .admin-page header {
   background-color: #3a3f48;
   height: 56px;
@@ -3037,6 +3037,9 @@ body.admin-page {
 .admin-page .container {
   max-width: 1200px;
   padding: 20px 15px;
+  min-height: auto;
+  display: block;
+  justify-content: flex-start;
 }
 
 .admin-card {
@@ -3166,14 +3169,14 @@ body.admin-page {
 .detail-box {
   background: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 15px;
   margin: 20px 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .detail-row {
   display: flex;
-  padding: 15px 0;
+  padding: 10px 0;
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -3238,5 +3241,38 @@ body.admin-page {
   
   .detail-row .label {
     width: 100%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filter-wrapper {
+    flex-direction: column;
+  }
+  
+  .form-control, .btn-apply {
+    width: 100%;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .detail-row .label {
+    width: 100%;
+  }
+  
+  /* ボタンを大きく（追加） */
+  .btn-back, .btn-delete {
+    padding: 16px 24px !important;
+    font-size: 16px !important;
   }
 }

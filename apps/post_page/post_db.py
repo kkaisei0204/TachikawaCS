@@ -16,7 +16,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS posts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_name TEXT NOT NULL,
-            shop_name TEXT NOT NULL,
+            shop_nameTEXT NOT NULL,
             crowd_level TEXT NOT NULL,
             comment TEXT,
             timestamp TEXT NOT NULL
@@ -51,20 +51,20 @@ def get_all_posts():
     return posts
 
 
-def add_post(user_name, shop_name, crowd_level, comment):
+def add_post(user_name, shop_id, crowd_level, comment):
     """新規投稿を追加"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     timestamp = datetime.now().isoformat()
     # postsテーブルに新しい投稿を追加するSQL
     c.execute('''
-        INSERT INTO posts (user_name, shop_name, crowd_level, comment, timestamp)
+        INSERT INTO posts (user_name, shop_id, crowd_level, comment, timestamp)
         VALUES (?, ?, ?, ?, ?)
-    ''', (user_name, shop_name, crowd_level, comment, timestamp))
+    ''', (user_name, shop_id, crowd_level, comment, timestamp))
     
     conn.commit()
     conn.close()
-    print(f"[投稿保存] {user_name} → {shop_name}（{crowd_level}）")
+    print(f"[投稿保存] {user_name} → {shop_id}（{crowd_level}）")
 
 
 def get_post_by_id(post_id):
@@ -77,16 +77,16 @@ def get_post_by_id(post_id):
     return post
 
 
-def update_post(post_id, shop_name, crowd_level, comment):
+def update_post(post_id, shop_id, crowd_level, comment):
     """投稿を更新"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     # 店舗名・混雑度・コメントを更新するSQL
     c.execute('''
         UPDATE posts 
-        SET shop_name = ?, crowd_level = ?, comment = ?
+        SET shop_name= ?, crowd_level = ?, comment = ?
         WHERE id = ?
-    ''', (shop_name, crowd_level, comment, post_id))
+    ''', (shop_id, crowd_level, comment, post_id))
     conn.commit()
     conn.close()
 
@@ -111,27 +111,27 @@ def get_user_last_post_time(user_name):
     return result[0] if result else None
 
 
-def get_posts_by_shop(shop_name):
+def get_posts_by_shop(shop_id):
     """特定の店舗の投稿をすべて取得"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     # 店舗名で絞って投稿を取得
-    c.execute('SELECT * FROM posts WHERE shop_name = ? ORDER BY timestamp DESC', (shop_name,))
+    c.execute('SELECT * FROM posts WHERE shop_name= ? ORDER BY timestamp DESC', (shop_id,))
     posts = c.fetchall()
     conn.close()
     return posts
 
 
-def get_latest_post_by_shop(shop_name):
+def get_latest_post_by_shop(shop_id):
     """店舗ごとの最新投稿を1件取得"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''
         SELECT * FROM posts 
-        WHERE shop_name = ? 
+        WHERE shop_name= ? 
         ORDER BY timestamp DESC 
         LIMIT 1
-    ''', (shop_name,))
+    ''', (shop_id,))
     result = c.fetchone()
     conn.close()
     return result
@@ -232,7 +232,7 @@ def get_user_reservations(user_name):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''
-        SELECT id, user_name, shop_name, date, time, people, comment
+        SELECT id, user_name, shop_id, date, time, people, comment
         FROM reservations
         WHERE user_name = ?
         ORDER BY date DESC, time DESC
@@ -332,7 +332,7 @@ def has_trusted_badge(username):
 
 # 未投稿店舗チェック＆報酬システム（1時間以内判定）
 
-def is_shop_unposted(shop_name):
+def is_shop_unposted(shop_id):
     """その店舗が1時間以内に投稿がないかチェック（マップから消えた = 未投稿扱い）"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -343,9 +343,9 @@ def is_shop_unposted(shop_name):
     # 1時間以内の投稿があるかチェック
     c.execute('''
         SELECT COUNT(*) FROM posts 
-        WHERE shop_name = ? 
+        WHERE shop_name= ? 
         AND datetime(timestamp) >= datetime(?)
-    ''', (shop_name, one_hour_ago.isoformat()))
+    ''', (shop_id, one_hour_ago.isoformat()))
     
     count = c.fetchone()[0]
     conn.close()
@@ -517,3 +517,86 @@ try:
     add_evaluation_points_column_if_not_exists()
 except:
     pass
+
+def get_ai_prediction(shop_name, current_weekday):
+    """
+    AI予測データを取得
+    「何曜日の何時～何時は空いている可能性が高いです」を1つだけ表示
+    空いている時間がない場合は「大変込み合っています」
+    """
+    import sqlite3
+    from datetime import datetime, timedelta
+    
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    
+    # 直近1週間のデータを取得
+    one_week_ago = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')
+    
+    cur.execute("""
+        SELECT 
+            strftime('%H', timestamp) as hour,
+            crowd_level,
+            COUNT(*) as count
+        FROM posts
+        WHERE shop_name = ? 
+        AND CAST(strftime('%w', timestamp) AS INTEGER) = ?
+        AND timestamp >= ?
+        GROUP BY hour, crowd_level
+        ORDER BY hour
+    """, (shop_name, current_weekday, one_week_ago))
+    
+    data = cur.fetchall()
+    conn.close()
+    
+    total_posts = sum(row[2] for row in data)
+    weekday_name = get_weekday_name(current_weekday)
+    
+    if not data or total_posts < 10:
+        return {
+            'has_enough_data': False,
+            'total_posts': total_posts,
+            'current_weekday_name': weekday_name
+        }
+    
+    # 時間帯ごとのデータを整理
+    hour_data = {}
+    for hour, level, count in data:
+        if hour not in hour_data:
+            hour_data[hour] = {}
+        hour_data[hour][level] = count
+    
+    # 空いている時間を探す（信頼度が高い順）
+    best_time = None
+    best_confidence = 0
+    
+    for hour in sorted(hour_data.keys()):
+        levels = hour_data[hour]
+        total = sum(levels.values())
+        
+        # 「空いている」の割合を計算
+        empty_count = levels.get('空いている', 0)
+        confidence = int((empty_count / total) * 100)
+        
+        # 60%以上の確率で空いている時間を採用
+        if confidence >= 60 and confidence > best_confidence:
+            best_time = {
+                'time_range': f"{hour}:00-{int(hour)+1}:00",
+                'data_count': total,
+                'confidence': confidence
+            }
+            best_confidence = confidence
+    
+    return {
+        'has_enough_data': True,
+        'best_time': best_time,
+        'is_crowded': best_time is None,
+        'total_posts': total_posts,
+        'current_weekday_name': weekday_name,
+        'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')
+    }
+
+def get_weekday_name(weekday):
+    """曜日番号を日本語名に変換"""
+    weekdays = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日']
+    return weekdays[weekday] if 0 <= weekday < 7 else '不明'

@@ -231,6 +231,27 @@
       margin: 3px 0;
     }
 
+    .crowded-card {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .crowded-card h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    
+    .crowded-card p {
+      font-size: 14px;
+      opacity: 0.95;
+      margin: 5px 0;
+    }
+    
     .prediction-item {
       display: flex;
       justify-content: space-between;
@@ -373,42 +394,38 @@
         <h2 class="section-title">
           AI混雑予測
         </h2>
-        
+  
         {% if prediction_data.has_enough_data %}
           <!-- 曜日情報 -->
-          <div style="margin-bottom: 15px; padding: 10px; background: #e3f2fd; border-radius: 6px; text-align: center;">
+          <div style="margin-bottom: 20px; padding: 12px; background: #e3f2fd; border-radius: 6px; text-align: center;">
             <strong>{{ prediction_data.current_weekday_name }}の予測</strong>
           </div>
-          
-          <!-- 時間帯別予測 -->
-          {% for pred in prediction_data.predictions %}
-            <div class="prediction-item">
-              <span class="prediction-time">{{ pred.time_range }}</span>
-              <span class="prediction-level status-{{ pred.predicted_level }}">{{ pred.predicted_level }}</span>
-              <span class="prediction-confidence">確度 {{ pred.confidence }}%</span>
+    
+          {% if prediction_data.is_crowded %}
+            <!-- 空いている時間がない場合 -->
+            <div class="crowded-card">
+              <h3>大変込み合っています</h3>
+              <p>直近1週間のデータでは、空いている時間帯が見つかりませんでした</p>
+              <p style="font-size: 13px; margin-top: 10px; opacity: 0.9;">
+                過去データ {{ prediction_data.total_posts }}件から予測
+              </p>
             </div>
-          {% endfor %}
-
-          <!-- おすすめ時間帯 -->
-          {% if best_time %}
+          {% else %}
+            <!-- 空いている時間がある場合 -->
             <div class="best-time-card">
               <h3>おすすめ時間帯</h3>
-              <div class="time">{{ best_time.time_range }}</div>
-              <p>{{ best_time.predicted_level }}の可能性が高いです</p>
-              <p style="font-size: 13px; margin-top: 5px;">過去データ {{ best_time.data_count }}件から予測</p>
+              <div class="time">{{ prediction_data.best_time.time_range }}</div>
+              <p>{{ prediction_data.current_weekday_name }}の{{ prediction_data.best_time.time_range }}は<br>空いている可能性が高いです</p>
+              <p style="font-size: 13px; margin-top: 10px; opacity: 0.9;">
+                過去データ {{ prediction_data.best_time.data_count }}件から予測（確度 {{ prediction_data.best_time.confidence }}%）
+              </p>
             </div>
           {% endif %}
-
+    
           <div class="last-updated">
             最終更新: {{ prediction_data.last_updated }}
           </div>
-
-          <div style="margin-top: 15px; padding: 12px; background: #e3f2fd; border-radius: 6px; font-size: 14px;">
-            <strong>データ:</strong> {{ prediction_data.data_period }}・{{ prediction_data.current_weekday_name }}の投稿{{ prediction_data.total_posts }}件から予測
-          </div>          
-          <div style="margin-top: 15px; padding: 12px; background: #e3f2fd; border-radius: 6px; font-size: 14px;">
-            <strong>データ:</strong> {{ prediction_data.data_period }}・{{ prediction_data.current_weekday_name }}の投稿{{ prediction_data.total_posts }}件から予測
-          </div>
+    
         {% else %}
           <div class="data-insufficient">
             <h3>データ不足</h3>
