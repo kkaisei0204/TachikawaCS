@@ -73,9 +73,9 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 15px;
-      margin-top: 20px;
+      padding: 0 15px;
     }
-    
+
     /* タブレット（768px〜1199px）: 3列 */
     @media (max-width: 1199px) {
       .user-posts-grid { 
@@ -195,8 +195,7 @@
       </div>
     </div>
 
-    <h3 style="font-size:16px; margin-bottom:10px;">{{ user.username }} さんの投稿</h3>
-    <div class="user-posts-grid">
+    <h3 style="font-size:16px; margin-bottom:10px; padding-left:15px;">{{ user.username }} さんの投稿</h3>    <div class="user-posts-grid">
       {% for post in user_posts %}
         <div class="user-post-card">
           <div>
