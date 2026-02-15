@@ -16,7 +16,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS posts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_name TEXT NOT NULL,
-            shop_nameTEXT NOT NULL,
+            shop_name TEXT NOT NULL,
             crowd_level TEXT NOT NULL,
             comment TEXT,
             timestamp TEXT NOT NULL
