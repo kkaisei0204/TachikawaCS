@@ -51,20 +51,20 @@ def get_all_posts():
     return posts
 
 
-def add_post(user_name, shop_id, crowd_level, comment):
+def add_post(user_name, shop_name, crowd_level, comment):
     """新規投稿を追加"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     timestamp = datetime.now().isoformat()
     # postsテーブルに新しい投稿を追加するSQL
     c.execute('''
-        INSERT INTO posts (user_name, shop_id, crowd_level, comment, timestamp)
+        INSERT INTO posts (user_name, shop_name, crowd_level, comment, timestamp)
         VALUES (?, ?, ?, ?, ?)
-    ''', (user_name, shop_id, crowd_level, comment, timestamp))
+    ''', (user_name, shop_name, crowd_level, comment, timestamp))
     
     conn.commit()
     conn.close()
-    print(f"[投稿保存] {user_name} → {shop_id}（{crowd_level}）")
+    print(f"[投稿保存] {user_name} → {shop_name}（{crowd_level}）")
 
 
 def get_post_by_id(post_id):
@@ -77,7 +77,7 @@ def get_post_by_id(post_id):
     return post
 
 
-def update_post(post_id, shop_id, crowd_level, comment):
+def update_post(post_id, shop_name, crowd_level, comment):
     """投稿を更新"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -86,7 +86,7 @@ def update_post(post_id, shop_id, crowd_level, comment):
         UPDATE posts 
         SET shop_name= ?, crowd_level = ?, comment = ?
         WHERE id = ?
-    ''', (shop_id, crowd_level, comment, post_id))
+    ''', (shop_name, crowd_level, comment, post_id))
     conn.commit()
     conn.close()
 
@@ -111,18 +111,18 @@ def get_user_last_post_time(user_name):
     return result[0] if result else None
 
 
-def get_posts_by_shop(shop_id):
+def get_posts_by_shop(shop_name):
     """特定の店舗の投稿をすべて取得"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     # 店舗名で絞って投稿を取得
-    c.execute('SELECT * FROM posts WHERE shop_name= ? ORDER BY timestamp DESC', (shop_id,))
+    c.execute('SELECT * FROM posts WHERE shop_name= ? ORDER BY timestamp DESC', (shop_name,))
     posts = c.fetchall()
     conn.close()
     return posts
 
 
-def get_latest_post_by_shop(shop_id):
+def get_latest_post_by_shop(shop_name):
     """店舗ごとの最新投稿を1件取得"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -131,7 +131,7 @@ def get_latest_post_by_shop(shop_id):
         WHERE shop_name= ? 
         ORDER BY timestamp DESC 
         LIMIT 1
-    ''', (shop_id,))
+    ''', (shop_name,))
     result = c.fetchone()
     conn.close()
     return result
@@ -232,7 +232,7 @@ def get_user_reservations(user_name):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''
-        SELECT id, user_name, shop_id, date, time, people, comment
+        SELECT id, user_name, shop_name, date, time, people, comment
         FROM reservations
         WHERE user_name = ?
         ORDER BY date DESC, time DESC
@@ -332,7 +332,7 @@ def has_trusted_badge(username):
 
 # 未投稿店舗チェック＆報酬システム（1時間以内判定）
 
-def is_shop_unposted(shop_id):
+def is_shop_unposted(shop_name):
     """その店舗が1時間以内に投稿がないかチェック（マップから消えた = 未投稿扱い）"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -345,7 +345,7 @@ def is_shop_unposted(shop_id):
         SELECT COUNT(*) FROM posts 
         WHERE shop_name= ? 
         AND datetime(timestamp) >= datetime(?)
-    ''', (shop_id, one_hour_ago.isoformat()))
+    ''', (shop_name, one_hour_ago.isoformat()))
     
     count = c.fetchone()[0]
     conn.close()
