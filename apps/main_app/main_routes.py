@@ -511,6 +511,7 @@ def update_profile():
     return redirect(url_for("main.user_page", username=current_user.username))
 # ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
 # 大原亭店舗ページと予約処理
+main_bp = Blueprint('main', __name__)
 @main_bp.route("/shop/oharatei")
 def oharatei():
     """大原亭の店舗ページを表示"""
