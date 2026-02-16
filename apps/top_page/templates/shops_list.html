@@ -117,8 +117,13 @@
         <div class="shop-intro-card" 
              data-shop-name="{{ shop.name }}" 
              data-category="{{ shop.category }}">
-          <a href="{{ url_for('main.shop_detail', shop_name=shop.name) }}" 
-             style="text-decoration: none; color: inherit; display: block;">
+          
+          {# --- カード全体のリンク判定 --- #}
+          {% if shop.name == '大原亭' %}
+            <a href="{{ url_for('main.oharatei') }}" style="text-decoration: none; color: inherit; display: block;">
+          {% else %}
+            <a href="{{ url_for('main.shop_detail', shop_name=shop.name) }}" style="text-decoration: none; color: inherit; display: block;">
+          {% endif %}
             <div class="shop-intro-header">
               <h3 class="shop-intro-name">{{ shop.name }}</h3>
               <span class="shop-category-badge">{{ shop.category }}</span>
@@ -133,13 +138,25 @@
               {% endif %}
             </div>
           </a>
+
           <div class="shop-intro-footer">
-            {% if shop.url %}
-              <a href="{{ shop.url }}" target="_blank" class="shop-website-link" onclick="event.stopPropagation();">
+            {# --- 公式サイトボタンのロジック --- #}
+            {% if shop.name == '大原亭' %}
+              <a href="{{ url_for('main.oharatei') }}" class="shop-website-link" onclick="event.stopPropagation();">
+                詳細ページを見る
+              </a>
+            {% elif shop.url %}
+              {# 他の店舗：httpから始まっていなければ自動で補完 #}
+              <a href="{{ shop.url if shop.url.startswith('http') else 'https://' + shop.url }}" 
+                 target="_blank" class="shop-website-link" onclick="event.stopPropagation();">
                 公式サイト
               </a>
             {% else %}
-              <span style="color: #999; font-size: 13px;">公式サイトなし</span>
+              {# 公式サイトがない店舗：Google検索で代用 #}
+              <a href="https://www.google.com/search?q={{ shop.name }}+立川+飲食店" 
+                 target="_blank" class="shop-website-link" onclick="event.stopPropagation();">
+                ネットで検索
+              </a>
             {% endif %}
           </div>
         </div>
