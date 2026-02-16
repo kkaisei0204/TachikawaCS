@@ -16,7 +16,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_login import LoginManager
-from werkzeug.security import generate_password_hash # パスワードハッシュ化用
+from werkzeug.security import generate_password_hash
 
 # プロジェクトルートをパスに追加します
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -41,9 +41,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # データベースは post_data.db に統一します。
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI') or f'sqlite:///{os.path.join(basedir, "post_data.db")}'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.abspath("post_data.db")}'
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key-please-change'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+print("DB URI =", app.config['SQLALCHEMY_DATABASE_URI'])
 
 # データベースとアプリを紐付け
 db.init_app(app)

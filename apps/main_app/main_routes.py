@@ -129,14 +129,9 @@ def register():
         password = request.form.get('password', '')
         icon_file = request.files.get('icon')
         bio = request.form.get("bio", "")
-        # 入力チェック
-        if not username or not password:
-            flash("ユーザー名とパスワードを入力してください", "error")
-            return render_template('register.html')
-        # アイコン画像のチェック
-        if not icon_file or icon_file.filename == '':
-            flash("アイコン画像を選択してください", "error")
-            return render_template('register.html')
+        if not username or not password or not icon_file:
+            flash('ユーザー名、パスワード、プロフィール画像はすべて必須です', 'error')
+            return redirect(url_for('register.html'))
         # 既存ユーザーの確認
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
@@ -275,7 +270,7 @@ def admin_panel():
 def admin_user_detail(user_id):
     """管理者専用：ユーザー詳細（投稿数/平均評価/最新投稿など）"""
     from apps.main_app.models import User
-    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_ai_prediction
+    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_user_total_points, get_ai_prediction
     from datetime import datetime
     # ユーザー取得
     user = User.query.get_or_404(user_id)
@@ -310,18 +305,11 @@ def admin_user_detail(user_id):
                 })
     except Exception:
         pass
-    # AI予測の有無は、投稿数が10件以上であれば「あり」として表示します。
-    # 平均評価（既存関数がある前提）
-    try:
-        avg_rating = get_user_average_rating(user.username)
-    except Exception:
-        avg_rating = None
     # レンダリング
     return render_template(
         'admin_user_detail.html',
         user=user,
         posts_count=posts_count,
-        avg_rating=avg_rating,
         latest_posts=latest_posts
     )
 # 管理者ルートはadmin_guard.pyの@admin_requiredデコレータを付けることで、管理者以外のアクセスを防止しています。これにより、セキュリティーの確保と、管理者機能の誤使用を防止しています。
@@ -376,32 +364,33 @@ def admin_toggle_admin(user_id):
 def user_page(username):
     """ユーザーページ（そのユーザーの投稿・評価集計・平均評価）"""
     from apps.main_app.models import User
-    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_user_average_rating, get_user_total_points, get_ai_prediction
-    # ユーザー取得
+    from apps.post_page.post_db import get_all_posts, get_post_ratings, get_user_total_points, get_ai_prediction
     user = User.query.filter_by(username=username).first_or_404()
     # 投稿一覧から該当ユーザー分だけ抽出
     all_posts = get_all_posts()
     user_posts = []
-    # 全投稿走査
-    # ユーザーページでは、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
+    total_helpful = 0
+    total_not_helpful = 0
+    
     for post_id, post_user_name, shop_name, crowd_level, comment, timestamp in all_posts:
         if post_user_name == username:
             helpful, not_helpful = get_post_ratings(post_id)
+            total_helpful += helpful
+            total_not_helpful += not_helpful
+            
             user_posts.append({
                 "id": post_id,
                 "shop_name": shop_name,
                 "crowd_level": crowd_level,
                 "comment": comment,
                 "timestamp": timestamp,
-                "helpful_count": helpful,
-                "not_helpful_count": not_helpful,
-                "total_ratings": helpful + not_helpful
-            })
-    # 投稿を新しい順にソート
+                "helpful": helpful,
+                "not_helpful": not_helpful,
+            })    # 投稿を新しい順にソート
     user_posts.sort(key=lambda x: x['timestamp'], reverse=True)
     # 平均評価取得
+    from apps.post_page.post_db import get_user_average_rating
     avg_rating = get_user_average_rating(username)
-    # ポイント取得
     points_info = get_user_total_points(username)
     # レンダリング
     return render_template(
@@ -409,7 +398,9 @@ def user_page(username):
         user=user,
         user_posts=user_posts,
         avg_rating=avg_rating,
-        user_points=points_info['total_points']
+        user_points=points_info['total_points'],
+        total_helpful=total_helpful,
+        total_not_helpful=total_not_helpful
     )
     
 # ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。

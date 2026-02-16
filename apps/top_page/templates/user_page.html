@@ -57,14 +57,34 @@
           <p class="profile-bio">{{ user.bio if user.bio else '自己紹介はまだありません' }}</p>
           {% if current_user.is_authenticated and current_user.username == user.username %}
             <a href="{{ url_for('main.profile_edit') }}" style="font-size:12px; color:#333; text-decoration:none; border:1px solid #333; padding:4px 8px; border-radius:4px; display:inline-block; margin-top:5px;">プロフィール編集</a>
-            <span style="font-size:12px; color:#666; margin-left:10px;">ポイント: <span style="color:#f39c12; font-weight:600;">{{ user_points }}</span>pt</span>
-          {% endif %}
+            <span class="user-points" style="font-size:12px; color:#666; margin-left:10px;">ポイント: {{ user_points }}pt</span>
+
+            <!-- 平均評価 -->
+            {% if avg_rating is not none %}
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; padding: 15px; background: #ffffff; border-radius: 8px;">
+              <span style="font-size: 20px; font-weight: 600; color: #555; line-height: 1;">評価:</span>
+              <div class="stars" style="display: flex; gap: 3px; line-height: 1;">
+                {% set stars = (avg_rating / 20)|round|int %}
+                {% for i in range(5) %}
+                  {% if i < stars %}
+                    <span style="color: #ffc107; font-size: 32px; line-height: 1;">★</span>
+                  {% else %}
+                    <span style="color: #f5f5f5; font-size: 32px; line-height: 1;">★</span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <span style="font-size: 20px; color: #666; line-height: 1;">({{ avg_rating }}%)</span>
+            </div>
+            {% endif %}
+        {% endif %}
         </div>
       </div>
 
       <div class="profile-stats">
-        <div class="stat-item"><div class="stat-value">{{ user_posts|length }}</div><div class="stat-label">投稿</div></div>
-        <div class="stat-item"><div class="stat-value">{{ user_posts|sum(attribute='helpful_count') }}</div><div class="stat-label">いいね</div></div>
+          <div class="stat-item"><div class="stat-value">{{ user_posts|length }}</div><div class="stat-label">投稿</div></div>
+          <div class="stat-item"><div class="stat-value">{{ total_helpful }}</div><div class="stat-label">役に立った</div></div>
+          <div class="stat-item"><div class="stat-value">{{ total_not_helpful }}</div><div class="stat-label">役に立たなかった</div></div>
+        </div>
       </div>
     </div>
 
@@ -78,14 +98,14 @@
           </div>
           <div class="post-meta">
             <span class="post-date">{{ post.timestamp[:10] }}</span>
-            <span>👍 {{ post.helpful_count }}</span>
+            <span style="font-size: 16px;">👍 {{ post.helpful }}</span>
+            <span style="font-size: 16px;">👎 {{ post.not_helpful }}</span>
           </div>
-
           {% if current_user.is_authenticated and current_user.username == user.username %}
             <div class="post-actions">
               <a href="{{ url_for('post.edit_post', post_id=post.id) }}" class="btn-edit">編集</a>
-              <form method="POST" action="{{ url_for('post.delete_post_route', post_id=post.id) }}" style="display: inline; flex:1;" onsubmit="return confirm('本当にこの投稿を削除しますか？');">
-                <button type="submit" class="btn-delete" style="width:100%;">削除</button>
+              <form method="POST" action="{{ url_for('post.delete_post_route', post_id=post.id) }}" onsubmit="return confirm('本当にこの投稿を削除しますか？');">
+                <button type="submit" class="btn-delete">削除</button>
               </form>
             </div>
           {% endif %}

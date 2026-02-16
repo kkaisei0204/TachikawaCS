@@ -260,3 +260,22 @@ def delete_post_route(post_id):
     
     flash("投稿を削除しました", "success")
     return redirect(url_for('main.user_page', username=current_user.username))
+
+# 評価処理
+@post_bp.route('/rate/<int:post_id>', methods=['POST'])
+@login_required
+def rate_post(post_id):
+    """投稿に評価を追加"""
+    from apps.post_page.post_db import add_rating
+    
+    data = request.get_json()
+    is_helpful = data.get('is_helpful', True)
+    
+    result = add_rating(post_id, current_user.username, is_helpful)
+    
+    if result['success']:
+        flash('評価しました', 'success')
+    else:
+        flash(result.get('message', '評価に失敗しました'), 'error')
+    
+    return jsonify(result)

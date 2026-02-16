@@ -372,39 +372,22 @@ def get_user_bonus_points(username):
 
 # add_bonus_points()は、ユーザー名とポイント数を引数として受け取り、そのユーザーのボーナスポイントをデータベースに加算する関数です。これにより、ユーザーが特定のアクションを行った際に、報酬としてボーナスポイントを付与することができます。また、ユーザーが存在しない場合は新規作成するロジックも含まれています。
 def add_bonus_points(username, points):
-    """ボーナスポイント付与"""
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
+    """ボーナスポイント付与（SQLAlchemy版）"""
+    from apps.main_app.models import User
+    from apps.main_app.db import db
     
     try:
-        # bonus_pointsにポイントを加算
-        c.execute('''
-            UPDATE users 
-            SET bonus_points = COALESCE(bonus_points, 0) + ?
-            WHERE username = ?
-        ''', (points, username))
-        
-        if c.rowcount == 0:
-            try:
-                # ユーザーが存在しない場合は新規作成
-                c.execute('ALTER TABLE users ADD COLUMN bonus_points INTEGER DEFAULT 0')
-                # ユーザーテーブルのボーナスポイントを更新
-                c.execute('''
-                    UPDATE users 
-                    SET bonus_points = COALESCE(bonus_points, 0) + ?
-                    WHERE username = ?
-                ''', (points, username))
-            except:
-                pass
-        
-        conn.commit()
-        print(f"[ボーナスポイント] {username} に {points}pt 付与")
+        user = User.query.filter_by(username=username).first()
+        if user:
+            user.total_points = (user.total_points or 0) + points
+            db.session.commit()
+            print(f"[ポイント付与] {username} に {points}pt 付与（合計: {user.total_points}pt）")
+        else:
+            print(f"[エラー] ユーザー {username} が見つかりません")
     except Exception as e:
-        print(f"[ボーナスポイント付与エラー] {e}")
-        conn.rollback()
-    finally:
-        conn.close()
-
+        print(f"[エラー] ポイント付与失敗: {e}")
+        db.session.rollback()
+        
 # 評価ポイントシステム
 # add_evaluation_points_column_if_not_exists()は、usersテーブルに評価ポイントカラムを追加する関数です。既にカラムが存在する場合は何もしません。これにより、ユーザーテーブルに評価ポイントを保存するためのカラムが確実に存在するようになります。
 def add_evaluation_points_column_if_not_exists():
@@ -601,3 +584,54 @@ def get_weekday_name(weekday):
     """曜日番号を日本語名に変換"""
     weekdays = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日']
     return weekdays[weekday] if 0 <= weekday < 7 else '不明'
+
+# add_rating()は、投稿ID、ユーザー名、評価の種類（役立ったかどうか）を引数として受け取り、その評価をデータベースに追加する関数です。これにより、ユーザーが投稿に対して評価を付けることができるようになります。また、評価が追加された際には、投稿者にポイントを付与するロジックも含まれています。
+def add_rating(post_id, user_name, is_helpful):
+    """投稿に評価を追加（いいね・よくないね）"""
+    from apps.main_app.models import User
+    from apps.main_app.db import db
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    try:
+        # 既に評価済みかチェック
+        c.execute('''
+            SELECT id FROM ratings 
+            WHERE post_id = ? AND user_name = ?
+        ''', (post_id, user_name))
+        
+        if c.fetchone():
+            conn.close()
+            return {'success': False, 'message': '既に評価済みです'}
+        
+        # 評価を追加
+        c.execute('''
+            INSERT INTO ratings (post_id, user_name, is_helpful)
+            VALUES (?, ?, ?)
+        ''', (post_id, user_name, is_helpful))
+        
+        conn.commit()
+        conn.close()
+        
+        # 投稿者にポイント付与（SQLAlchemy）
+        post_info = get_post_by_id(post_id)
+        if post_info:
+            post_author = post_info[1]  # user_name
+            try:
+                user = User.query.filter_by(username=post_author).first()
+                if user:
+                    points = 5 if is_helpful else 0  # いいね: 5pt
+                    user.total_points = (user.total_points or 0) + points
+                    db.session.commit()
+                    print(f"[評価ポイント] {post_author} に {points}pt 付与")
+            except Exception as e:
+                print(f"[エラー] ポイント付与失敗: {e}")
+                db.session.rollback()
+        
+        return {'success': True}
+        
+    except Exception as e:
+        conn.close()
+        print(f"[エラー] 評価追加失敗: {e}")
+        return {'success': False, 'message': str(e)}
