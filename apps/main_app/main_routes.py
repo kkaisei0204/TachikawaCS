@@ -53,7 +53,7 @@ def index():
         # SHOP_LISTから店舗URLを取得します。店舗名が一致するものを探し、URLがあれば保存します。
         for shop in SHOP_LIST:
             if shop['name'] == shop_name:
-                shop_url = shop.get('url', '')
+                shop_url = shop.get('reservation_url', '')
                 break
         # 時間表記の整形（例：5分前、1時間前、たった今）
         delta = now - dt
@@ -511,11 +511,30 @@ def update_profile():
     return redirect(url_for("main.user_page", username=current_user.username))
 # ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
 # 大原亭店舗ページと予約処理
-main_bp = Blueprint('main', __name__)
 @main_bp.route("/shop/oharatei")
 def oharatei():
     """大原亭の店舗ページを表示"""
     return render_template("oharatei.html")
+@main_bp.route("/shop/oharatei/reservation", methods=["POST"])
+def oharatei_reservation():
+    """大原亭の予約処理"""
+    flash('予約を受け付けました', 'success')
+    return redirect(url_for('main.oharatei'))
+@main_bp.route("/shop/<path:shop_name>")
+def shop_detail(shop_name):
+    """店舗詳細ページを表示"""
+    from apps.config import SHOP_DETAILS, SHOP_LIST
+    shop_detail = SHOP_DETAILS.get(shop_name, {})
+    shop_url = ''
+    for shop in SHOP_LIST:
+        if shop['name'] == shop_name:
+            shop_url = shop.get('reservation_url', '')
+            break
+    return render_template('shop_detail.html', 
+        shop_name=shop_name,
+        shop_detail=shop_detail,
+        shop_url=shop_url
+    )
 # ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
 # 管理者
 @main_bp.route('/admin/dashboard')
@@ -950,7 +969,7 @@ def shops_list():
             'category': main_category,
             'description': shop_detail.get('description', ''),
             'signature': shop_detail.get('signature', ''),
-            'url': shop.get('url', '')
+            'url': shop.get('reservation_url', '')
         })
     # レンダリング
     return render_template('shops_list.html', shops=shops)
@@ -959,7 +978,7 @@ def shops_list():
 # プロフィール更新（保存）
 @main_bp.route("/profile/update", methods=["POST"])
 @login_required
-def shop_detail(shop_name=None): 
+def profile_updata(shop_name=None): 
     """プロフィール編集（保存）"""
     from PIL import Image
     from apps.main_app.models import User

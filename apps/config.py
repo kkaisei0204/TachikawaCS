@@ -80,7 +80,7 @@ SHOP_LIST = [
     {"name": "蔵CAFE ヤマスカフェ", "lat": 35.696691777191404, "lng": 139.40274261099174 ,"url": "https://yamaskuracafe.wixsite.com/website"},
     {"name": "ゑびす屋 場外馬券場前店", "lat": 35.7101392450532, "lng": 139.42622812647244 ,"url": "https://www.annex-tachikawa.com/store/suzuran166/"},
     {"name": "幸喜寿し", "lat": 35.701296523479456, "lng": 139.41658842263166 },
-    {"name": "大原亭", "lat": 35.696184471180345, "lng": 139.4135754022215, "url": "/shop/大原亭"}
+    {"name": "大原亭", "lat": 35.696184471180345, "lng": 139.4135754022215, "reservation_url": "/shop/oharatei"}
 ]
 
 CROWD_LEVELS = [
@@ -97,9 +97,11 @@ for shop in SHOP_LIST:
         "lng": shop["lng"]
     }
     # reservation_urlが存在する場合のみ追加
-    if "reservation_url" in shop:
-        location["reservation_url"] = shop["reservation_url"]
-    
+    # reservation_urlが存在する場合はurlとして渡す
+    if "url" in shop:
+        location["url"] = shop["url"]
+    elif "reservation_url" in shop:
+        location["url"] = shop["reservation_url"]    
     SHOP_LOCATIONS[shop["name"]] = location
 
 # 店舗詳細情報（カテゴリ、説明、看板メニュー）
