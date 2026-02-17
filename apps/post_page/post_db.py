@@ -372,22 +372,23 @@ def get_user_bonus_points(username):
 
 # add_bonus_points()は、ユーザー名とポイント数を引数として受け取り、そのユーザーのボーナスポイントをデータベースに加算する関数です。これにより、ユーザーが特定のアクションを行った際に、報酬としてボーナスポイントを付与することができます。また、ユーザーが存在しない場合は新規作成するロジックも含まれています。
 def add_bonus_points(username, points):
-    """ボーナスポイント付与（SQLAlchemy版）"""
-    from apps.main_app.models import User
-    from apps.main_app.db import db
-    
+    """ボーナスポイント付与（SQLite版）"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
     try:
-        user = User.query.filter_by(username=username).first()
-        if user:
-            user.total_points = (user.total_points or 0) + points
-            db.session.commit()
-            print(f"[ポイント付与] {username} に {points}pt 付与（合計: {user.total_points}pt）")
-        else:
-            print(f"[エラー] ユーザー {username} が見つかりません")
+        c.execute('''
+            UPDATE users
+            SET bonus_points = COALESCE(bonus_points, 0) + ?
+            WHERE username = ?
+        ''', (points, username))
+        conn.commit()
+        print(f"[ポイント付与] {username} に {points}pt 付与完了")
     except Exception as e:
         print(f"[エラー] ポイント付与失敗: {e}")
-        db.session.rollback()
-        
+        conn.rollback()
+    finally:
+        conn.close()
+                        
 # 評価ポイントシステム
 # add_evaluation_points_column_if_not_exists()は、usersテーブルに評価ポイントカラムを追加する関数です。既にカラムが存在する場合は何もしません。これにより、ユーザーテーブルに評価ポイントを保存するためのカラムが確実に存在するようになります。
 def add_evaluation_points_column_if_not_exists():

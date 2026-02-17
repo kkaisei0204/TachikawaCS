@@ -969,7 +969,7 @@ def shops_list():
             'category': main_category,
             'description': shop_detail.get('description', ''),
             'signature': shop_detail.get('signature', ''),
-            'url': shop.get('reservation_url', '')
+            'url': shop.get('url', '') or shop.get('reservation_url', '')
         })
     # レンダリング
     return render_template('shops_list.html', shops=shops)

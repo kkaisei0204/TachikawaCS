@@ -159,10 +159,12 @@ def submit_post():
             }), 403
 
     # 投稿保存処理
+    # 投稿前にチェック
+    is_unposted = is_shop_unposted(shop_name)
+    # 投稿保存処理
     add_post(user_name, shop_name, crowd_level, comment or "（コメントなし）")
-    
-    # 未投稿店舗（1時間以内に投稿がない）ならボーナスポイント付与
-    if is_shop_unposted(shop_name):
+    # 未投稿だった場合ボーナスポイント付与
+    if is_unposted:
         add_bonus_points(user_name, 50)
         print(f"[ボーナス] {user_name} に50pt付与（未投稿店舗）")
 
