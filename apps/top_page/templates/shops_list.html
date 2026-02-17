@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>飲食店一覧 - 立川混雑シェア</title>
-  
   <!-- 外部CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="manifest" href="/static/manifest.json">
@@ -13,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="混雑シェア">  
 </head>
-<body>
+<body>  
   <header>
     <div class="app_name">
       <h1>立川混雑シェア</h1>
@@ -114,15 +113,15 @@
     <!-- 店舗カード一覧 -->
     <div class="shop-cards-grid" id="shop-cards-grid">
       {% for shop in shops %}
-        <div class="shop-intro-card" 
-             data-shop-name="{{ shop.name }}" 
-             data-category="{{ shop.category }}">
-          <a href="{{ url_for('main.shop_detail', shop_name=shop.name) }}" 
-             style="text-decoration: none; color: inherit; display: block;">
-            <div class="shop-intro-header">
-              <h3 class="shop-intro-name">{{ shop.name }}</h3>
-              <span class="shop-category-badge">{{ shop.category }}</span>
-            </div>
+        <div class="shop-intro-card"
+          data-shop-name="{{ shop.name }}"
+          data-category="{{ shop.category }}"
+          onclick="goToShopMarker('{{ shop.name }}')"
+          style="cursor: pointer;">
+          <div class="shop-intro-header">
+            <h3 class="shop-intro-name">{{ shop.name }}</h3>
+            <span class="shop-category-badge">{{ shop.category }}</span>
+          </div>
             <div class="shop-intro-body">
               <p class="shop-intro-description">{{ shop.description }}</p>
               {% if shop.signature %}
@@ -230,5 +229,11 @@
     });
   </script>
 
+  <script>
+  function goToShopMarker(shopName) {
+    // トップページにshop_nameパラメータ付きで遷移
+    window.location.href = "/?shop=" + encodeURIComponent(shopName);
+  }
+  </script>
 </body>
 </html>

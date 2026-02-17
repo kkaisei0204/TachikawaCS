@@ -520,21 +520,6 @@ def oharatei_reservation():
     """大原亭の予約処理"""
     flash('予約を受け付けました', 'success')
     return redirect(url_for('main.oharatei'))
-@main_bp.route("/shop/<path:shop_name>")
-def shop_detail(shop_name):
-    """店舗詳細ページを表示"""
-    from apps.config import SHOP_DETAILS, SHOP_LIST
-    shop_detail = SHOP_DETAILS.get(shop_name, {})
-    shop_url = ''
-    for shop in SHOP_LIST:
-        if shop['name'] == shop_name:
-            shop_url = shop.get('reservation_url', '')
-            break
-    return render_template('shop_detail.html', 
-        shop_name=shop_name,
-        shop_detail=shop_detail,
-        shop_url=shop_url
-    )
 # ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
 # 管理者
 @main_bp.route('/admin/dashboard')

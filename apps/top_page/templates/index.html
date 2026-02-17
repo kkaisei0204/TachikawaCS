@@ -374,6 +374,7 @@
           
           allMarkers.push(marker);
           marker.addTo(map);
+          marker.shopName = place.shop_name;
         });
       }
 
@@ -465,6 +466,20 @@
             }
           }
         });
+      }
+      // URLパラメータから店舗名を取得してポップアップを開く
+      const urlParams = new URLSearchParams(window.location.search);
+      const shopParam = urlParams.get('shop');
+
+      if (shopParam) {
+        const targetMarker = allMarkers.find(m => m.shopName === shopParam);
+
+        if (targetMarker) {
+          map.setView(targetMarker.getLatLng(), 17);
+          targetMarker.openPopup();
+        } else {
+          alert('この店舗は現在投稿がないため、地図上に表示されていません。');
+        }
       }
     });
 
