@@ -91,26 +91,28 @@
             <strong>{{ prediction_data.current_weekday_name }}の予測</strong>
           </div>
     
-          {% if prediction_data.is_crowded %}
-            <!-- 空いている時間がない場合 -->
-            <div class="crowded-card">
-              <h3>大変込み合っています</h3>
-              <p>直近1週間のデータでは、空いている時間帯が見つかりませんでした</p>
-              <p style="font-size: 13px; margin-top: 10px; opacity: 0.9;">
-                過去データ {{ prediction_data.total_posts }}件から予測
-              </p>
+          {% if prediction_data.current_prediction %}
+          <!-- 予測結果表示 -->
+          <div class="best-time-card">
+            <h3>現在の混雑予測</h3>
+            <div class="time" style="font-size: 32px; margin: 15px 0; color: 
+              {% if prediction_data.current_prediction.predicted_level == '空いている' %}#4caf50
+              {% elif prediction_data.current_prediction.predicted_level == 'やや混雑' %}#ff9800
+              {% else %}#f44336{% endif %};">
+              {{ prediction_data.current_prediction.predicted_level }}
             </div>
-          {% else %}
-            <!-- 空いている時間がある場合 -->
-            <div class="best-time-card">
-              <h3>おすすめ時間帯</h3>
-              <div class="time">{{ prediction_data.best_time.time_range }}</div>
-              <p>{{ prediction_data.current_weekday_name }}の{{ prediction_data.best_time.time_range }}は<br>空いている可能性が高いです</p>
-              <p style="font-size: 13px; margin-top: 10px; opacity: 0.9;">
-                過去データ {{ prediction_data.best_time.data_count }}件から予測（確度 {{ prediction_data.best_time.confidence }}%）
-              </p>
-            </div>
-          {% endif %}
+            <p>{{ prediction_data.current_weekday_name }} {{ prediction_data.current_hour }}時台</p>
+            <p style="font-size: 13px; margin-top: 10px; opacity: 0.9;">
+              過去データ {{ prediction_data.current_prediction.data_count }}件から予測（確度 {{ prediction_data.current_prediction.confidence }}%）
+            </p>
+          </div>
+        {% else %}
+          <!-- この時間帯のデータなし -->
+          <div class="data-insufficient">
+            <h3>この時間帯のデータなし</h3>
+            <p>現在の時間帯（{{ prediction_data.current_hour }}時台）の過去データがありません</p>
+          </div>
+        {% endif %}
     
           <div class="last-updated">
             最終更新: {{ prediction_data.last_updated }}
