@@ -180,10 +180,13 @@ def register():
             img.save(filepath, quality=85, optimize=True)
             # データベース登録
             icon_path = f"uploads/icons/{unique_filename}"
+            
+            # ハッシュ化するためのライブラリのインポート
+            from werkzeug.security import generate_password_hash
             # 新規ユーザー作成
             new_user = User(
                 username=username,
-                password=password,
+                password=generate_password_hash(password),
                 is_admin=False,
                 icon_path=icon_path,
                 bio=bio
@@ -509,18 +512,90 @@ def update_profile():
     db.session.commit()
     flash("プロフィールを更新しました！", "success")
     return redirect(url_for("main.user_page", username=current_user.username))
-# ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
-# 大原亭店舗ページと予約処理
+
+# 大原亭の店舗ページと予約処理は、実際には外部の予約システムに連携する必要がありますが、ここでは簡略化して、予約を受け付けた旨のフラッシュメッセージを表示して店舗ページにリダイレクトするだけの処理としています。
 @main_bp.route("/shop/oharatei")
 def oharatei():
     """大原亭の店舗ページを表示"""
     return render_template("oharatei.html")
+
+# 大原亭の予約処理は、実際には外部の予約システムに連携する必要がありますが、ここでは簡略化して、予約を受け付けた旨のフラッシュメッセージを表示して店舗ページにリダイレクトするだけの処理としています。
 @main_bp.route("/shop/oharatei/reservation", methods=["POST"])
 def oharatei_reservation():
     """大原亭の予約処理"""
     flash('予約を受け付けました', 'success')
     return redirect(url_for('main.oharatei'))
+
 # ユーザーページと同様に、投稿一覧から該当ユーザー分だけ抽出して、投稿数や平均評価を計算します。最新10件の投稿も表示用に整形して渡します。
+@main_bp.route("/ai_prediction/<path:shop_name>")
+def shop_detail(shop_name):
+    """店舗詳細・AI予測ページ"""
+    from apps.config import SHOP_DETAILS, SHOP_LIST
+    from apps.post_page.post_db import get_posts_by_shop, get_ai_prediction
+    from apps.prediction.prediction import get_shop_total_post_count
+    from datetime import datetime
+    
+    # 店舗情報取得
+    shop_detail = SHOP_DETAILS.get(shop_name, {})
+    shop_url = ''
+    for shop in SHOP_LIST:
+        if shop['name'] == shop_name:
+            shop_url = shop.get('url', '') or shop.get('reservation_url', '')
+            break
+    
+    # 最近の投稿を取得
+    all_posts = get_posts_by_shop(shop_name)
+    recent_posts = []
+    for post in all_posts[:10]:
+        try:
+            dt = datetime.fromisoformat(post[5])
+            delta = datetime.now() - dt
+            if delta.total_seconds() < 60:
+                time_ago = f"{int(delta.total_seconds())}秒前"
+            elif delta.total_seconds() < 3600:
+                time_ago = f"{int(delta.total_seconds() / 60)}分前"
+            else:
+                time_ago = f"{int(delta.total_seconds() / 3600)}時間前"
+        except:
+            time_ago = "不明"
+        
+        recent_posts.append({
+            'user_name': post[1],
+            'crowd_level': post[3],
+            'comment': post[4],
+            'time_ago': time_ago,
+            'helpful_count': 0,
+            'not_helpful_count': 0
+        })
+    
+    # AI予測データ
+    total_posts = get_shop_total_post_count(shop_name, months=3)
+    current_weekday = datetime.now().weekday()
+    weekday_names = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日']
+    
+    # AI予測データ
+    total_posts = get_shop_total_post_count(shop_name, months=3)
+    current_weekday = datetime.now().weekday()
+    weekday_names = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日']
+    
+    # 現在の時間帯の予測を取得
+    from apps.prediction.prediction import get_current_hour_prediction
+    current_prediction = get_current_hour_prediction(shop_name)
+    
+    prediction_data = {
+        'has_enough_data': total_posts >= 10,
+        'total_posts': total_posts,
+        'current_weekday_name': weekday_names[current_weekday],
+        'current_hour': datetime.now().hour,
+        'current_prediction': current_prediction
+    }
+    
+    return render_template('ai_prediction.html',
+        shop={'name': shop_name, 'url': shop_url, 'address': shop_detail.get('description', '')},
+        recent_posts=recent_posts,
+        prediction_data=prediction_data
+    )
+
 # 管理者
 @main_bp.route('/admin/dashboard')
 @login_required

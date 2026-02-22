@@ -69,15 +69,8 @@
     {% endif %}
   {% endwith %}
   
-  <div class="container">
-  <!-- お知らせセクション -->
-    <div class="notice-section">
-      <h2>ノート</h2>
-      <p>立川市内の混雑状況をリアルタイムで共有できるサービスです。</p>
-      <p>地図上のマーカーをクリックすると、各店舗の詳細情報とAI予測が確認できます。</p>
-      <p style="color: #856404; font-weight: 600; margin-top: 10px;">※ AI予測は過去3ヶ月に10件以上の投稿がある店舗で利用可能です</p>
-    </div>    
-<!-- 地図セクション -->
+  <div class="container">    
+    <!-- 地図セクション -->
     <div id="map-section" class="map-section">
       <h2>混雑状況マップ</h2>
       
@@ -265,7 +258,7 @@
           if (place.has_ai_prediction) {
             detailButton = `
               <div style="margin: 12px 0;">
-                <a href="/shop/${encodeURIComponent(place.shop_name)}"
+                <a href="${place.shop_name === '大原亭' ? '/ai_prediction/大原亭' : '/ai_prediction/' + encodeURIComponent(place.shop_name)}"
                    style="display: inline-block; 
                           width: 100%; 
                           padding: 10px; 

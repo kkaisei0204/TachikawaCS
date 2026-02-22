@@ -134,8 +134,7 @@
           </a>
           <div class="shop-intro-footer">
             {% if shop.url %}
-              <a href="{{ shop.url }}" target="_blank" class="shop-website-link" onclick="event.stopPropagation();">
-                公式サイト
+              <a href="{{ shop.url }}" target="{% if shop.name == '大原亭' %}_self{% else %}_blank{% endif %}" class="shop-website-link" onclick="event.stopPropagation();">                公式サイト
               </a>
             {% else %}
               <span style="color: #999; font-size: 13px;">公式サイトなし</span>

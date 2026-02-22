@@ -96,7 +96,6 @@ for shop in SHOP_LIST:
         "lat": shop["lat"],
         "lng": shop["lng"]
     }
-    # reservation_urlが存在する場合のみ追加
     # reservation_urlが存在する場合はurlとして渡す
     if "url" in shop:
         location["url"] = shop["url"]
