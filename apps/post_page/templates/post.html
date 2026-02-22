@@ -164,27 +164,41 @@
   const showUnpostedCheckbox = document.getElementById('showUnpostedOnly');
   const shopSelect = document.getElementById('shop_name');
   if (showUnpostedCheckbox && shopSelect) {
-    showUnpostedCheckbox.addEventListener('change', function() {
+    // 全optionを保存
+let allOptions = [];
+const shopSelect = document.getElementById('shop_name');
+
+if (shopSelect) {
+  // 初期状態の全optionを保存
+  allOptions = Array.from(shopSelect.querySelectorAll('option'));
+}
+
+const showUnpostedCheckbox = document.getElementById('showUnpostedOnly');
+if (showUnpostedCheckbox && shopSelect) {
+  showUnpostedCheckbox.addEventListener('change', function() {
       const showUnpostedOnly = this.checked;
-      const options = shopSelect.querySelectorAll('option');
-      options.forEach(option => {
+      const currentValue = shopSelect.value;
+      
+      // 全option削除
+      shopSelect.innerHTML = '';
+      
+      // フィルタリングして再追加
+      allOptions.forEach(option => {
         if (option.value === '') {
           // 「選択してください」は常に表示
-          option.style.display = '';
+          shopSelect.appendChild(option.cloneNode(true));
           return;
         }
         const isUnposted = option.getAttribute('data-is-unposted') === 'true';
-        if (showUnpostedOnly) {
-          // 未投稿のみ表示
-          option.style.display = isUnposted ? '' : 'none';
-        } else {
-          // すべて表示
-          option.style.display = '';
+        if (!showUnpostedOnly || isUnposted) {
+          shopSelect.appendChild(option.cloneNode(true));
         }
       });
-      // 現在選択されている店舗が非表示になった場合、選択をリセット
-      const selectedOption = shopSelect.options[shopSelect.selectedIndex];
-      if (selectedOption && selectedOption.style.display === 'none') {
+      
+      // 選択状態を復元（存在する場合のみ）
+      if (shopSelect.querySelector(`option[value="${currentValue}"]`)) {
+        shopSelect.value = currentValue;
+      } else {
         shopSelect.value = '';
       }
     });

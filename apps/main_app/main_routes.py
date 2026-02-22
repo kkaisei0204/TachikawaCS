@@ -334,7 +334,7 @@ def admin_delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     # 完了メッセージ
-    flash(f"ユーザー '{username}' を削除しました", "success")
+    flash(f"ユーザー '{username}' を削除しました", "error")
     return redirect(url_for('main.admin_panel'))
 
 # 権限切替
