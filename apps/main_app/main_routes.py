@@ -180,10 +180,13 @@ def register():
             img.save(filepath, quality=85, optimize=True)
             # データベース登録
             icon_path = f"uploads/icons/{unique_filename}"
+            
+            # ハッシュ化するためのライブラリのインポート
+            from werkzeug.security import generate_password_hash
             # 新規ユーザー作成
             new_user = User(
                 username=username,
-                password=password,
+                password=generate_password_hash(password),
                 is_admin=False,
                 icon_path=icon_path,
                 bio=bio
